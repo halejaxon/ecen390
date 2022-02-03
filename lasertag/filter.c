@@ -5,13 +5,13 @@
 #define FILTER_IIR_FILTER_COUNT 10
 #define QUEUE_INIT_VALUE 0.0
 #define X_QUEUE_SIZE 10
+#define Y_QUEUE_SIZE 10
 #define Z_QUEUE_SIZE IIR_A_COEFFICIENT_COUNT
 #define FIR_FILTER_TAP_COUNT 81
 
 // Static variables
-static queue_t * xQueue;
-
-static queue_t * yQueue;
+static queue_t xQueue;
+static queue_t yQueue;
 static queue_t zQueueArr[FILTER_IIR_FILTER_COUNT];
 static queue_t outputQueueArr[FILTER_IIR_FILTER_COUNT];
 
@@ -126,12 +126,17 @@ const static double iirBCoefficientConstants[FILTER_FREQUENCY_COUNT][IIR_B_COEFF
 
 // Must call this prior to using any filter functions.
 void filter_init() {
-    
+    printf("check 3\n");
+    // Init queues and fill them with 0s.
+    initXQueue();  // Call queue_init() on xQueue and fill it with zeros.
+    initYQueue();  // Call queue_init() on yQueue and fill it with zeros.
+    initZQueues(); // Call queue_init() on all of the zQueues and fill each z queue with zeros.
+    initOutputQueues();  // Call queue_init() all of the outputQueues and fill each outputQueue with zeros.
 }
 
 // Use this to copy an input into the input queue of the FIR-filter (xQueue).
 void filter_addNewInput(double x) {
-    // FILLER
+    queue_push(&xQueue, x);
 }
 
 // Fills a queue with the given fillValue. For example,
@@ -139,7 +144,9 @@ void filter_addNewInput(double x) {
 // after executing this function, the queue will contain 10 values
 // all of them 1.0.
 void filter_fillQueue(queue_t *q, double fillValue) {
-    // FILLER
+    for (uint32_t j=0; j < q->size; j++) {
+        queue_overwritePush(&(xQueue), fillValue);
+    }
 }
 
 // Invokes the FIR-filter. Input is contents of xQueue.
@@ -281,9 +288,25 @@ void initZQueues() {
     }
 }
 
+void initOutputQueues() {
+    for (uint32_t i=0; i<FILTER_IIR_FILTER_COUNT; i++) {
+        queue_init(&(outputQueueArr[i]), Z_QUEUE_SIZE, itoa(i));
+        for (uint32_t j=0; j<Z_QUEUE_SIZE; j++) {
+            queue_overwritePush(&(outputQueueArr[i]), QUEUE_INIT_VALUE);
+        }
+    }
+}
+
 void initXQueue() {
     queue_init(&(xQueue), X_QUEUE_SIZE, "x queue");
     for (uint32_t j=0; j<X_QUEUE_SIZE; j++) {
         queue_overwritePush(&(xQueue), QUEUE_INIT_VALUE);
+    }
+}
+
+void initYQueue() {
+    queue_init(&(yQueue), Y_QUEUE_SIZE, "y queue");
+    for (uint32_t i=0; i<Y_QUEUE_SIZE; i++) {
+        queue_overwritePush(&(yQueue), QUEUE_INIT_VALUE);
     }
 }
