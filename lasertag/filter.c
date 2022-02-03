@@ -8,7 +8,7 @@
 #define Y_QUEUE_SIZE 10
 #define Z_QUEUE_SIZE IIR_A_COEFFICIENT_COUNT
 #define FIR_FILTER_TAP_COUNT 81
-#define POWER_QUEUE_SIZE 20000
+#define POWER_QUEUE_SIZE 2000
 #define NUM_POW_QUEUES 10
 #define POW_ARRAY_SIZE 10
 
@@ -19,6 +19,7 @@ static queue_t zQueueArr[FILTER_IIR_FILTER_COUNT];
 static queue_t outputQueueArr[FILTER_IIR_FILTER_COUNT];
 static queue_t powerOutputArr[NUM_POW_QUEUES];
 static double currentPowerValue[POW_ARRAY_SIZE];
+static double oldestValues[FILTER_IIR_FILTER_COUNT];
 
 const static double firCoefficients[FIR_FILTER_TAP_COUNT] = {
 -6.0546138291252586e-04, 
@@ -180,13 +181,21 @@ double filter_iirFilter(uint16_t filterNumber) {
 // (newest-value * newest-value). Note that this function will probably need an
 // array to keep track of these values for each of the 10 output queues.
 double filter_computePower(uint16_t filterNumber, bool forceComputeFromScratch, bool debugPrint) {
-    double oldest_value;
-    double newest_value;
+    double prev_power = currentPowerValue[filterNumber];
+    double oldestValues[filterNumber] = queue_readElementAt(outputQueueArr[filterNumber]->size - 1);
+    double newest_value = queue_readElementAt(0);
+    
     if(forceComputeFromScratch){
-        for (int64_t i =0; i<;i++){
+        currentPowerValue[filterNumber] = 0;
+        for (int16_t j = 0; j < POWER_QUEUE_SIZE; j++) {
+            currentPowerValue[filterNumber] = currentPowerValue[filterNumber] + outputQueueArr[filterNumber]*outputQueueArr[filterNumber];
         }
     }
-    return 0; // FILLER
+    else{
+        currentPowerValue[filterNumber] = prev_power - (oldest-value * oldest-value) + (newest-value * newest-value)
+    }
+    
+    return currentPowerValue[filterNumber]; // FILLER
 }
 
 // Returns the last-computed output power value for the IIR filter
