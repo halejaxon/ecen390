@@ -10,6 +10,7 @@
 
 // Static variables
 static queue_t * xQueue;
+
 static queue_t * yQueue;
 static queue_t zQueueArr[FILTER_IIR_FILTER_COUNT];
 static queue_t outputQueueArr[FILTER_IIR_FILTER_COUNT];
