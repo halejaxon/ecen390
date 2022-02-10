@@ -17,4 +17,9 @@ void filterTest_init();
 // response on the TFT.
 bool filterTest_runTest();
 
+// ADDED BY ME
+bool filterTest_runFirAlignmentTest(bool printMessageFlag);
+bool filterTest_floatingPointEqual(double a, double b);
+void filterTest_fillQueue(queue_t *q, double fillValue);
+
 #endif /* FILTERTEST_H_ */
