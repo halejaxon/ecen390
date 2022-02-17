@@ -1000,7 +1000,7 @@ bool filterTest_runTest() {
         i, true);               // This plots the individual filter response.
     utils_msDelay(TWO_SECONDS); // Leave on the display for a few seconds.
   }
-  printf("DONE???\n");
+
   return success;
 }
 

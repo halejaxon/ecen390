@@ -7,8 +7,8 @@ source code for personal or educational use.
 For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 */
 
-#include "runningModes.h"
 #include "interrupts.h"
+#include "runningModes.h"
 
 #include <stdio.h>
 

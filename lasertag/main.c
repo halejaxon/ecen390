@@ -56,41 +56,6 @@ int main() {
 #ifdef RUNNING_MODE_TESTS
   // queue_runTest();      // M1
   filterTest_runTest(); // M3 T1
-  // printf("buns\n");
-
-  // printf("******** filterTest_runTest() **********\n");
-  // bool success = true; // Be optimistic.
-  // filter_init();       // transmitter_runTest(); // M3 T2
-  // filterTest_init();
-  // filterTest_fillQueue(filter_getXQueue(), 0.0);
-  // filter_addNewInput(1.0);
-
-  // for (uint32_t i = 0; i < filter_getFirCoefficientCount();
-  //      i++) { // Push the single 1.0 through the queue.
-  //   printf("checkpoint 1\n");
-  //   double firValue = filter_firFilter(); // Run the FIR filter.
-  //   printf("checkpoint 2\n");
-  //   double firGoldenOutput =
-  //       filter_getFirCoefficientArray()[i]; // Golden output is simply the
-  //       FIR
-  //                                           // coefficient.
-  //   printf("checkpoint 3\n");
-  //   if (!filterTest_floatingPointEqual(
-  //           firValue,
-  //           firGoldenOutput)) { // If the output from the FIR filter does not
-  //                               // match the golden value, print an error.
-  //     printf("checkpoint 4\n");
-  //     success = false; // The test failed.
-  //     printf("filter_runAlignmentTest: Output from FIR Filter(%20.24le) does
-  //     "
-  //            "not match test-data(%20.24le).\n",
-  //            firValue, firGoldenOutput);
-  //   }
-  //   printf("checkpoint 5\n");
-  //   filter_addNewInput(
-  //       0.0); // Shift the 1.0 value over one position in the queue.
-  // }
-
   // detector_runTest(); // M3 T3
   // sound_runTest(); // M4
 #endif
