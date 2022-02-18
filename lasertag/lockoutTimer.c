@@ -7,13 +7,17 @@ enum lockout_st_t {
 };
 static enum lockout_st_t currentState;
 
-void lockoutTimer_start();
+void lockoutTimer_start() {
+  // filler
+}
 
 // Perform any necessary inits for the lockout timer.
 void lockoutTimer_init() { currentState = init_st; }
 
 // Returns true if the timer is running.
-bool lockoutTimer_running();
+bool lockoutTimer_running() {
+  return false; // FILLLER
+}
 
 // Standard tick function.
 void lockoutTimer_tick() {
@@ -42,4 +46,7 @@ void lockoutTimer_tick() {
 // Returns true if passes, false otherwise.
 // This test uses the interval timer to determine correct delay for
 // the interval timer.
-bool lockoutTimer_runTest();
+bool lockoutTimer_runTest() {
+  return false;
+  // FILLER
+}

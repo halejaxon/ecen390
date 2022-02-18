@@ -4,11 +4,11 @@ queue_test.c
 filter.c
 filterTest.c
 histogram.c
-# isr.c
-# trigger.c
-# transmitter.c
-# hitLedTimer.c
-# lockoutTimer.c
+isr.c
+trigger.c
+transmitter.c
+hitLedTimer.c
+lockoutTimer.c
 # detector.c
 # sound.c
 # timer_ps.c

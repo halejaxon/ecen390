@@ -1,4 +1,4 @@
-#include "hitLedTimer.h "
+#include "hitLedTimer.h"
 #include <stdbool.h>
 
 // States for the controller state machine.
@@ -9,10 +9,14 @@ enum hitLedTimer_st_t {
 static enum hitLedTimer_st_t currentState;
 
 // Calling this starts the timer.
-void hitLedTimer_start();
+void hitLedTimer_start() {
+  // Filler
+}
 
 // Returns true if the timer is currently running.
-bool hitLedTimer_running();
+bool hitLedTimer_running() {
+  return false; // filler
+}
 
 // Standard tick function.
 void hitLedTimer_tick() {
@@ -39,17 +43,27 @@ void hitLedTimer_tick() {
 void hitLedTimer_init() { currentState = init_st; }
 
 // Turns the gun's hit-LED on.
-void hitLedTimer_turnLedOn();
+void hitLedTimer_turnLedOn() {
+  // Filler
+}
 
 // Turns the gun's hit-LED off.
-void hitLedTimer_turnLedOff();
+void hitLedTimer_turnLedOff() {
+  // Filler
+}
 
 // Disables the hitLedTimer.
-void hitLedTimer_disable();
+void hitLedTimer_disable() {
+  // Filler
+}
 
 // Enables the hitLedTimer.
-void hitLedTimer_enable();
+void hitLedTimer_enable() {
+  // Filler
+}
 
 // Runs a visual test of the hit LED.
 // The test continuously blinks the hit-led on and off.
-void hitLedTimer_runTest();
+void hitLedTimer_runTest() {
+  // Filler
+}
