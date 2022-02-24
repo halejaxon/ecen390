@@ -3,8 +3,9 @@
 #include "display.h"
 #include "mio.h"
 #include "switches.h"
-#include "utils.h"
+#include <math.h>
 #include <stdio.h>
+#include <utils.h>
 
 // SM debugging messages
 #define TX_INIT_ST_MSG "tx_init_st\n"
@@ -23,12 +24,25 @@
 #define TRANSMITTER_TEST_TICK_PERIOD_IN_MS 10
 #define BOUNCE_DELAY 5
 
+// Uncomment for debug prints
+#define DEBUG
+
+#if defined(DEBUG)
+#include "xil_printf.h"
+#include <stdio.h>
+#define DPRINTF(...) printf(__VA_ARGS__)
+#define DPCHAR(ch) outbyte(ch)
+#else
+#define DPRINTF(...)
+#define DPCHAR(ch)
+#endif
+
 // Static variables
-static uint16_t txFrequencyNumber;
-static bool isRunning = false;
-static bool isContinuous;
-static bool pinInput;
-static uint16_t frequencies[FILTER_FREQUENCY_COUNT] = {
+volatile static uint16_t txFrequencyNumber;
+volatile static bool isRunning = false;
+volatile static bool isContinuous = false;
+volatile static bool pinInput = false;
+volatile static uint16_t frequencies[FILTER_FREQUENCY_COUNT] = {
     1471, 1724, 2000, 2273, 2632, 2941, 3333, 3571, 3846, 4167};
 
 // The transmitter state machine generates a square wave output at the
@@ -74,9 +88,9 @@ void txDebugStatePrint() {
     }
   }
 }
-
+// Function returns the pulse widths with respect to the given frequency.
 uint16_t getPulseWidth(uint16_t frequencyNumber) {
-  return TICK_RATE / (HALF * frequencies[frequencyNumber]);
+  return round(TICK_RATE / (HALF * frequencies[frequencyNumber]));
 }
 
 void transmitter_set_jf1_to_one() {
@@ -128,26 +142,32 @@ void transmitter_tick() {
   case init_st:
     // Set counter to zero
     transCtr = 0;
+    pulseCtr = 0;
     pinInput = false;
 
     if (isContinuous && isRunning) {
       pinInput = !pinInput;
-
+      //// if the pinInput is true then set the output to one.
       if (pinInput) {
         transmitter_set_jf1_to_one();
-      } else {
+      } // If the pinInput is false then set the output to zero
+      else {
         transmitter_set_jf1_to_zero();
       }
 
       // State update
       currentState = contTransmit_st;
+      // when isRunning is true then output the values.
     } else if (isRunning) {
       // Run the tx
       pinInput = !pinInput;
-
+      // if the pinInput is true then set the output to one.
       if (pinInput) {
         transmitter_set_jf1_to_one();
-      } else {
+
+      }
+      // If the pinInput is false then set the output to zero
+      else {
         transmitter_set_jf1_to_zero();
       }
       currFrequencyNumber = txFrequencyNumber;
@@ -160,6 +180,10 @@ void transmitter_tick() {
     }
     break;
   case transmit_st:
+
+    DPRINTF("%d", pinInput);
+    // if thecounter is greater than the TRANSMIT_TIME then reset variables and
+    // return to init state.
     if (transCtr > TRANSMIT_TIME) {
       // Set counter to zero
       transCtr = 0;
@@ -173,10 +197,15 @@ void transmitter_tick() {
     } else if (pulseCtr > getPulseWidth(currFrequencyNumber)) {
       // Run the tx
       pinInput = !pinInput;
+      pulseCtr = 0;
 
+      // Printing new line if DEBUG is on.
+      DPRINTF("\n");
+      // If pinout istrue then output should be 1.
       if (pinInput) {
         transmitter_set_jf1_to_one();
-      } else {
+      } // If pinout is not true then output should be 0.
+      else {
         transmitter_set_jf1_to_zero();
       }
 
@@ -185,32 +214,31 @@ void transmitter_tick() {
     }
     break;
   case contTransmit_st:
-    if (transCtr > TRANSMIT_TIME) {
-      // Set counter to zero
-      transCtr = 0;
-      pinInput = false;
-
-      // Lower running flag
-      isRunning = false;
-
-      // State update
-      currentState = init_st;
-    } else if (pulseCtr > getPulseWidth(txFrequencyNumber)) {
+    // Printing the output if the DEBUG is true.
+    DPRINTF("%d", pinInput);
+    // If thecounter is above the TRAMSIT_TIME then return to Inital state.
+    if (pulseCtr > getPulseWidth(txFrequencyNumber)) {
       // Run the tx
       pinInput = !pinInput;
-
+      pulseCtr = 0;
+      // Printing new line if DEBUG is on.
+      DPRINTF("\n");
+      // If pinout istrue then output should be 1.
       if (pinInput) {
         transmitter_set_jf1_to_one();
+        // If pinout is not true then output should be 0.
       } else {
         transmitter_set_jf1_to_zero();
       }
 
       // State update
-      currentState = transmit_st;
+      currentState = contTransmit_st;
+    } else {
+      // State update
+      currentState = contTransmit_st;
     }
     break;
   default:
-    // print an error message here.
     break;
   }
 
@@ -219,12 +247,16 @@ void transmitter_tick() {
   case init_st:
     break;
   case transmit_st:
+    // Increment counters
     transCtr++;
+    pulseCtr++;
     break;
   case contTransmit_st:
+    // Increment counters
+    transCtr++;
+    pulseCtr++;
     break;
   default:
-    // print an error message here.
     break;
   }
 }
@@ -232,27 +264,24 @@ void transmitter_tick() {
 // Tests the transmitter.
 void transmitter_runTest() {
   printf("starting transmitter_runTest()\n");
+  utils_msDelay(TRANSMITTER_TEST_TICK_PERIOD_IN_MS);
   mio_init(false);
   buttons_init();     // Using buttons
   switches_init();    // and switches.
   transmitter_init(); // init the transmitter.
+  transmitter_setContinuousMode(true);
   // transmitter_enableTestMode(); // Prints diagnostics to stdio.
-  // printf("check 4");
   while (!(buttons_read() &
            BUTTONS_BTN1_MASK)) { // Run continuously until BTN1 is pressed.
-    // printf("check 5");
     uint16_t switchValue =
         switches_read() %
         FILTER_FREQUENCY_COUNT; // Compute a safe number from the switches.
     transmitter_setFrequencyNumber(
         switchValue); // set the frequency number based upon switch value.
-    // printf("check 1");
     transmitter_run();
     // Start the transmitter.
-    // printf("check 2");
     while (transmitter_running()) { // Keep ticking until it is done.
-      // printf("check 3");
-      transmitter_tick(); // tick.
+      transmitter_tick();           // tick.
       utils_msDelay(
           TRANSMITTER_TEST_TICK_PERIOD_IN_MS); // short delay between ticks.
     }
@@ -299,4 +328,34 @@ void transmitter_runNoncontinuousTest() {
 // Test runs until BTN1 is pressed.
 void transmitter_runContinuousTest() {
   // Filler
+  printf("starting transmitter_runTest()\n");
+  utils_msDelay(TRANSMITTER_TEST_TICK_PERIOD_IN_MS);
+  mio_init(false);
+  buttons_init();     // Using buttons
+  switches_init();    // and switches.
+  transmitter_init(); // init the transmitter.
+  transmitter_setContinuousMode(true);
+  // transmitter_enableTestMode(); // Prints diagnostics to stdio.
+  while (!(buttons_read() &
+           BUTTONS_BTN1_MASK)) { // Run continuously until BTN1 is pressed.
+    uint16_t switchValue =
+        switches_read() %
+        FILTER_FREQUENCY_COUNT; // Compute a safe number from the switches.
+    transmitter_setFrequencyNumber(
+        switchValue); // set the frequency number based upon switch value.
+    transmitter_run();
+    // Start the transmitter.
+    while (transmitter_running()) { // Keep ticking until it is done.
+      //   // transmitter_tick();           // tick.
+      // utils_msDelay(400);
+      //   //     TRANSMITTER_TEST_TICK_PERIOD_IN_MS); // short delay between
+      //   ticks.
+    }
+    printf("completed one test period.\n");
+  }
+  // transmitter_disableTestMode();
+  do {
+    utils_msDelay(BOUNCE_DELAY);
+  } while (buttons_read());
+  printf("exiting transmitter_runTest()\n");
 }
