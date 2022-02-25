@@ -3,18 +3,32 @@
 #include "mio.h"
 #include "transmitter.h"
 
-#define TICK_RATE 10000
+#define TICK_RATE 100000
 #define DEBOUNCE_MS (50 / 1000)
 #define DEBOUNCE_COUNT (TICK_RATE * DEBOUNCE_MS)
 #define TRIGGER_GUN_TRIGGER_MIO_PIN 10
 #define GUN_TRIGGER_PRESSED 1
 
+// Uncomment for debug prints
+#define DEBUG
+
+#if defined(DEBUG)
+#include "xil_printf.h"
+#include <stdio.h>
+#define DPRINTF(...) printf(__VA_ARGS__)
+#define DPCHAR(ch) outbyte(ch)
+#else
+#define DPRINTF(...)
+#define DPCHAR(ch)
+#endif
+
 // States for the controller state machine.
 enum trigger_st_t {
   init_st,       // Start here, transition out of this state on the first tick.
   waitForHit_st, // Check if the trigger input is high
-  debounce_st,   // Wait 50ms to see if it is a real press
-  transmitter_st // Activate the transmitter state machine
+  debouncePress_st,   // Wait 50ms to see if it is a real press
+  debounceRelease_st, //
+  transmitter_st      // Activate the transmitter state machine
 };
 static enum trigger_st_t currentState;
 
@@ -23,7 +37,9 @@ static bool triggerEnable = false;
 static bool ignoreGunInput = false;
 
 bool triggerPressed() {
-  return false; // Filler
+  // Read from JF-2 and from BTN0
+  return (buttons_read() & BUTTONS_BTN0_MASK) ||
+         mio_readPin(TRIGGER_GUN_TRIGGER_MIO_PIN);
 }
 
 // Determines whether the trigger switch of the gun is connected (see
@@ -62,33 +78,51 @@ void trigger_tick() {
   // Perform state update first.
   switch (currentState) {
   case init_st:
+    // printf("enter waitForHit_st\n");
     currentState = waitForHit_st;
     break;
   case waitForHit_st:
     if (triggerPressed()) {
-      currentState = debounce_st;
+      DPRINTF("D\n");
+      // printf("enter debounce_st\n");
+      currentState = debouncePress_st;
     } else {
       currentState = waitForHit_st;
     }
     break;
-  case debounce_st:
+  case debouncePress_st:
     if ((debounceCtr > DEBOUNCE_COUNT) && (triggerPressed())) {
       debounceCtr = 0;
       transmitter_run();
+
+      // printf("enter transmitter_st\n");
       currentState = transmitter_st;
     } else if (debounceCtr > DEBOUNCE_COUNT && !(triggerPressed())) {
+
       debounceCtr = 0;
+      // printf("enter init_st\n");
       currentState = init_st;
     } else {
-      currentState = debounce_st;
+      currentState = debouncePress_st;
     }
     break;
   case transmitter_st:
-    if (!transmitter_running()) {
+    if ((debounceCtr > DEBOUNCE_COUNT) && (!triggerPressed())) {
+      debounceCtr = 0;
+      DPRINTF("U\n");
       currentState = waitForHit_st;
     } else {
       currentState = transmitter_st;
     }
+
+    //   // printf("enter waitForHit_st\n");
+    // if (!transmitter_running()) {
+    //   DPRINTF("U\n");
+    //   // printf("enter waitForHit_st\n");
+    //   currentState = waitForHit_st;
+    // } else {
+    //   currentState = transmitter_st;
+    // }
     break;
   default:
     // print an error message here.
@@ -101,11 +135,11 @@ void trigger_tick() {
     break;
   case waitForHit_st:
     break;
-  case debounce_st:
+  case debouncePress_st:
     debounceCtr++;
     break;
   case transmitter_st:
-
+    debounceCtr++;
     break;
   default:
     // print an error message here.
@@ -116,4 +150,15 @@ void trigger_tick() {
 // Runs the test continuously until BTN1 is pressed.
 // The test just prints out a 'D' when the trigger or BTN0
 // is pressed, and a 'U' when the trigger or BTN0 is released.
-void trigger_runTest() {}
+void trigger_runTest() {
+  printf("starting trigger_runTest.\n");
+  trigger_init();
+  trigger_enable();
+  buttons_init();
+
+  while (!(buttons_read() &
+           BUTTONS_BTN2_MASK)) { // Run continuously until BTN2 is pressed.
+  }
+
+  printf("exiting trigger_runTest.\n");
+}

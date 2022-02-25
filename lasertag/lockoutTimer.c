@@ -80,7 +80,7 @@ void lockoutTimer_tick() {
   static uint32_t lockoutCtr;
 
   // Debugging
-  loDebugStatePrint();
+  // loDebugStatePrint();
 
   // Perform state update first.
   switch (currentState) {
@@ -153,12 +153,12 @@ bool lockoutTimer_runTest() {
     // utils_msDelay(LOCKOUT_TEST_TICK_PERIOD_MS); // short delay between ticks
   }
   intervalTimer_stop(INTERVAL_TIMER_TIMER_1);
-  printf("completed one test period.\n");
+  // printf("completed one test period.\n");
   // utils_msDelay(LOCKOUT_TIME);
 
   printf("Duration: %f\n",
          intervalTimer_getTotalDurationInSeconds(INTERVAL_TIMER_TIMER_1));
-  printf("exiting transmitter_runTest()\n");
+  printf("exiting lockoutTimer_runTest()\n");
 
   return false;
   // FILLER

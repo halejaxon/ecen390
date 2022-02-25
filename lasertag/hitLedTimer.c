@@ -27,6 +27,7 @@
 #define HL_TEST_TICK_PERIOD_MS 10
 #define TEST_TICK_RATE 100
 #define TEST_LIGHT_COUNT (LIGHT_TIME * TEST_TICK_RATE / 1000)
+#define LED_DELAY_TIME 300
 
 #define BOUNCE_DELAY 5
 
@@ -85,7 +86,7 @@ void hitLedTimer_tick() {
   static uint32_t ledCtr;
 
   // Debugging
-  hlDebugStatePrint();
+  // hlDebugStatePrint();
 
   // Perform state update first.
   switch (currentState) {
@@ -205,11 +206,11 @@ void hitLedTimer_runTest() {
       // utils_msDelay(HL_TEST_TICK_PERIOD_MS); // short delay between ticks
     }
     hitLedTimer_disable();
-    printf("completed one test period.\n");
-    utils_msDelay(LIGHT_TIME);
+    // printf("completed one test period.\n");
+    utils_msDelay(LED_DELAY_TIME);
   }
   do {
     utils_msDelay(BOUNCE_DELAY);
   } while (buttons_read());
-  printf("exiting transmitter_runTest()\n");
+  printf("exiting hitLedTimer_runTest()\n");
 }

@@ -73,8 +73,8 @@ int main() {
   // transmitter_runTest();
   // transmitter_runNoncontinuousTest();
   // transmitter_runContinuousTest();
-  // trigger_runTest();
-  hitLedTimer_runTest();
+  trigger_runTest();
+  // hitLedTimer_runTest();
   // lockoutTimer_runTest();
   while (1)
     ; // Forever-while loop. Modify as you see fit.
