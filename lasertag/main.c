@@ -71,11 +71,11 @@ int main() {
   interrupts_enableArmInts(); // now the ARM processor can see interrupts.
 
   // transmitter_runTest();
-  // transmitter_runNoncontinuousTest();
-  // transmitter_runContinuousTest();
+  transmitter_runNoncontinuousTest();
+  transmitter_runContinuousTest();
   trigger_runTest();
-  // hitLedTimer_runTest();
-  // lockoutTimer_runTest();
+  hitLedTimer_runTest();
+  lockoutTimer_runTest();
   while (1)
     ; // Forever-while loop. Modify as you see fit.
 #endif

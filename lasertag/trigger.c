@@ -82,50 +82,48 @@ void trigger_tick() {
     currentState = waitForHit_st;
     break;
   case waitForHit_st:
+  //if you sense a push then move onto the debounce state
     if (triggerPressed()) {
       DPRINTF("D\n");
       // printf("enter debounce_st\n");
       currentState = debouncePress_st;
-    } else {
+    } // move onto the wait state if not
+    else {
       currentState = waitForHit_st;
     }
     break;
   case debouncePress_st:
+  //if the counter is big and the trigger is preesed still then run the transmitter
     if ((debounceCtr > DEBOUNCE_COUNT) && (triggerPressed())) {
       debounceCtr = 0;
       transmitter_run();
-
-      // printf("enter transmitter_st\n");
       currentState = transmitter_st;
-    } else if (debounceCtr > DEBOUNCE_COUNT && !(triggerPressed())) {
+    }//move onto the init state if the counter is big but it was a false alarm 
+    else if (debounceCtr > DEBOUNCE_COUNT && !(triggerPressed())) {
 
       debounceCtr = 0;
       // printf("enter init_st\n");
       currentState = init_st;
-    } else {
+    }//Stay here if not 
+    else {
       currentState = debouncePress_st;
     }
     break;
   case transmitter_st:
+  //if the counter is big enough and the trigger still isn't pressed then stay her as a debounce.
     if ((debounceCtr > DEBOUNCE_COUNT) && (!triggerPressed())) {
       debounceCtr = 0;
       DPRINTF("U\n");
       currentState = waitForHit_st;
-    } else {
+    } ///stay in this transmitter state
+    else {
       currentState = transmitter_st;
     }
 
-    //   // printf("enter waitForHit_st\n");
-    // if (!transmitter_running()) {
-    //   DPRINTF("U\n");
-    //   // printf("enter waitForHit_st\n");
-    //   currentState = waitForHit_st;
-    // } else {
-    //   currentState = transmitter_st;
-    // }
+    
     break;
   default:
-    // print an error message here.
+    printf("error\n");// print an error message here.
     break;
   }
 
@@ -142,7 +140,7 @@ void trigger_tick() {
     debounceCtr++;
     break;
   default:
-    // print an error message here.
+    printf("error\n");// print an error message here.
     break;
   }
 }

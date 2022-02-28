@@ -26,8 +26,7 @@
 #define BOUNCE_DELAY 5
 
 // Uncomment for debug prints
-#define DEBUG
-
+//#define DEBUG
 #if defined(DEBUG)
 #include "xil_printf.h"
 #include <stdio.h>
@@ -94,11 +93,12 @@ uint16_t getPulseWidth(uint16_t frequencyNumber) {
   return round(TICK_RATE / (HALF * frequencies[frequencyNumber]));
 }
 
+//Functions writes to the mio pins to write a high value
 void transmitter_set_jf1_to_one() {
   mio_writePin(TRANSMITTER_OUTPUT_PIN,
                TRANSMITTER_HIGH_VALUE); // Write a '1' to JF-1.
 }
-
+//Function writes to the mio pins to write a low value
 void transmitter_set_jf1_to_zero() {
   mio_writePin(TRANSMITTER_OUTPUT_PIN,
                TRANSMITTER_LOW_VALUE); // Write a '1' to JF-1.
@@ -145,7 +145,7 @@ void transmitter_tick() {
     transCtr = 0;
     pulseCtr = 0;
     pinInput = false;
-
+// checking for continuous mode and if the transmitter is running to give pin a different value
     if (isContinuous && isRunning) {
       pinInput = !pinInput;
       //// if the pinInput is true then set the output to one.
@@ -175,7 +175,8 @@ void transmitter_tick() {
 
       // State update
       currentState = transmit_st;
-    } else { // No change
+    }// stay in this state 
+    else { // No change
       // State update
       currentState = init_st;
     }
@@ -195,7 +196,10 @@ void transmitter_tick() {
 
       // State update
       currentState = init_st;
-    } else if (pulseCtr > getPulseWidth(currFrequencyNumber)) {
+
+    } 
+    // Once the pulse count gets big enough then we can assign values and reset the counter.
+    else if (pulseCtr > getPulseWidth(currFrequencyNumber)) {
       // Run the tx
       pinInput = !pinInput;
       pulseCtr = 0;
@@ -257,7 +261,6 @@ void transmitter_tick() {
     break;
   case contTransmit_st:
     // Increment counters
-    // transCtr++;
     pulseCtr++;
     break;
   default:
@@ -274,7 +277,8 @@ void transmitter_runTest() {
   switches_init();    // and switches.
   transmitter_init(); // init the transmitter.
   transmitter_setContinuousMode(false);
-  // transmitter_enableTestMode(); // Prints diagnostics to stdio.
+   // Prints diagnostics to stdio.
+   //stay in this loop until they are pushed
   while (!(buttons_read() &
            BUTTONS_BTN1_MASK)) { // Run continuously until BTN1 is pressed.
     uint16_t switchValue =
@@ -284,6 +288,7 @@ void transmitter_runTest() {
         switchValue); // set the frequency number based upon switch value.
     transmitter_run();
     // Start the transmitter.
+    //In here until the transmitter stops running
     while (transmitter_running()) { // Keep ticking until it is done.
       transmitter_tick();           // tick.
       utils_msDelay(
@@ -291,10 +296,12 @@ void transmitter_runTest() {
     }
     printf("completed one test period.\n");
   }
-  // transmitter_disableTestMode();
+  //Delay for dounce
   do {
     utils_msDelay(BOUNCE_DELAY);
-  } while (buttons_read());
+  } 
+  //wait for buttons
+  while (buttons_read());
   printf("exiting transmitter_runTest()\n");
 }
 
@@ -341,23 +348,6 @@ void transmitter_runNoncontinuousTest() {
   } while (buttons_read());
   printf("exiting transmitter_runNonContinuousTest()\n");
 
-  // transmitter_enableTestMode(); // Prints diagnostics to stdio.
-  // while (!(buttons_read() &
-  //          BUTTONS_BTN1_MASK)) { // Run continuously until BTN1 is pressed.
-
-  //   // Start the transmitter.
-  //   // while (transmitter_running()) { // Keep ticking until it is done.
-  //   //   // transmitter_tick();           // tick.
-  //   //   utils_msDelay(400); // short delay between ticks.
-  //   // }
-  //   utils_msDelay(400); // short delay between ticks.
-  //   printf("completed one test period.\n");
-  // }
-  // // transmitter_disableTestMode();
-  // do {
-  //   utils_msDelay(BOUNCE_DELAY);
-  // } while (buttons_read());
-  // printf("exiting transmitter_runTest()\n");
 }
 
 // Tests the transmitter in continuous mode.
@@ -387,20 +377,7 @@ void transmitter_runContinuousTest() {
     transmitter_setFrequencyNumber(
         switchValue); // set the frequency number based upon switch value.
 
-    // Start the transmitter.
-    // while (transmitter_running()) { // Keep ticking until it is done.
-    //   //   // transmitter_tick();           // tick.
-    //   // utils_msDelay(400);
-    //   //   //     TRANSMITTER_TEST_TICK_PERIOD_IN_MS); // short delay
-    //   between
-    //   //   ticks.
-    // }
-    // printf("completed one test period.\n");
   }
-  // transmitter_disableTestMode();
-  // do {
-  //   utils_msDelay(BOUNCE_DELAY);
-  // } while (buttons_read());
   transmitter_setContinuousMode(false);
   printf("exiting transmitter_runTest()\n");
 }

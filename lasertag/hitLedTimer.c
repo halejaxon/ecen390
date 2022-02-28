@@ -115,12 +115,12 @@ void hitLedTimer_tick() {
     }
     break;
   case light_st:
-    // printf("ledCtr: %d\n", ledCtr);
+    //conter is still small so stay here
     if (ledCtr < LIGHT_COUNT) { // Stay in this state for 1/2 second
       // State update
       currentState = light_st;
-    } else { // Once it has been long enough, turn the light off and go back to
-             // waiting
+    } //// Once it has been long enough, turn the light off and go back to waiting
+    else { 
       // We have finished with the current received hit
       receivedHit = false;
       ledCtr = 0;
@@ -131,16 +131,18 @@ void hitLedTimer_tick() {
     }
     break;
   case final_st:
-    if (!hlEnable) { // Return to init once enable is set to false
+  // Return to init once enable is set to false
+    if (!hlEnable) { 
       // State update
       currentState = init_st;
-    } else { // Otherwise keep waiting in final state
+    } // Otherwise keep waiting in final state
+    else { 
       // State update
       currentState = final_st;
     }
     break;
   default:
-    // print an error message here.
+    printf("error\n");// print an error message here.
     break;
   }
 
@@ -154,7 +156,7 @@ void hitLedTimer_tick() {
     ledCtr++;
     break;
   default:
-    // print an error message here.
+    printf("error\n");// print an error message here.
     break;
   }
 }
@@ -202,15 +204,17 @@ void hitLedTimer_runTest() {
     hitLedTimer_enable();
     // Start the transmitter.
     while (hitLedTimer_running()) { // Keep ticking until it is done.
-      // hitLedTimer_tick(); // tick.
-      // utils_msDelay(HL_TEST_TICK_PERIOD_MS); // short delay between ticks
+      // tick.
+      // short delay between ticks
     }
     hitLedTimer_disable();
-    // printf("completed one test period.\n");
     utils_msDelay(LED_DELAY_TIME);
   }
+  //Insert a delay
   do {
     utils_msDelay(BOUNCE_DELAY);
-  } while (buttons_read());
+  }
+  //once the buttons gets pressed then we read our print statement.
+   while (buttons_read());
   printf("exiting hitLedTimer_runTest()\n");
 }

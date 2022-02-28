@@ -85,6 +85,7 @@ void lockoutTimer_tick() {
   // Perform state update first.
   switch (currentState) {
   case init_st:
+  //counting has to be true in order to get to the counter state
     if (counting) {
       // Set counter to zero
       lockoutCtr = 0;
