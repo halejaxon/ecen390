@@ -11,10 +11,10 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 #define RUNNING_MODE_TESTS
 
 // Uncomment to run Milestone 3, Task 2
-#define RUNNING_MODE_M3_T2
+//#define RUNNING_MODE_M3_T2
 
 // Uncomment to run continuous/shooter mode, Milestone 3, Task 3
-// #define RUNNING_MODE_M3_T3
+#define RUNNING_MODE_M3_T3
 
 // Uncomment to run two-player mode, Milestone 5
 // #define RUNNING_MODE_M5
@@ -56,8 +56,8 @@ int main() {
 #ifdef RUNNING_MODE_TESTS
   // queue_runTest();      // M1
   // filterTest_runTest(); // M3 T1
-  // detector_runTest(); // M3 T3
-  // sound_runTest(); // M4
+  detector_runTest(); // M3 T3
+// sound_runTest(); // M4
 #endif
 
 #ifdef RUNNING_MODE_M3_T2
@@ -77,12 +77,78 @@ int main() {
   hitLedTimer_runTest();
   lockoutTimer_runTest();
   while (1)
-    ; // Forever-while loop. Modify as you see fit.
+    ;
+    // Forever-while loop. Modify as you see fit.
 #endif
 
 #ifdef RUNNING_MODE_M3_T3
+  // ADC testing
+
+  // isr_init();
+
+  // isr_addDataToAdcBuffer(11);
+  // isr_addDataToAdcBuffer(12);
+  // isr_addDataToAdcBuffer(13);
+  // isr_addDataToAdcBuffer(14);
+
+  // printf("Num elements: %d\n", isr_adcBufferElementCount());
+  // printf("Popped element: %d\n", isr_removeDataFromAdcBuffer());
+  // printf("Popped element: %d\n", isr_removeDataFromAdcBuffer());
+  // printf("Popped element: %d\n", isr_removeDataFromAdcBuffer());
+  // printf("Popped element: %d\n", isr_removeDataFromAdcBuffer());
+  // printf("Popped element: %d\n", isr_removeDataFromAdcBuffer());
+  // printf("Popped element: %d\n", isr_removeDataFromAdcBuffer());
+  // printf("Num elements: %d\n", isr_adcBufferElementCount());
+
+  // End test
   // The program comes up in continuous mode.
   // Hold BTN2 while the program starts to come up in shooter mode.
+
+  // void swap(double *xpointer, double *ypointer) {
+  //   uint16_t temp = *xpointer;
+  //   *xpointer = *ypointer;
+  //   *ypointer = temp;
+  // }
+
+  // void selectionSort(double array[], uint8_t lengthArr) {
+  //   uint16_t index1, index2, minIdx;
+
+  //   // One by one move boundary of unsorted subarray
+  //   for (index1 = 0; index1 < lengthArr - 1; index1++) {
+  //     // Find the minimum element in unsorted array
+  //     minIdx = index1;
+  //     for (index2 = index1 + 1; index2 < lengthArr; index2++) {
+  //       if (array[index2] < array[minIdx]) {
+  //         minIdx = index2;
+  //       }
+  //     }
+
+  //     // Swap the found minimum element with the first element
+  //     // swap(&array[minIdx], &array[index1]);
+  //     double temp = array[minIdx];
+  //     array[minIdx] = array[index1];
+  //     array[index1] = temp;
+  //   }
+
+  //   for (int i = 0; i < lengthArr; i++) {
+  //     printf("value: %e\n", array[i]);
+  //   }
+  // }
+
+  // // sde
+  // double arr[5] = {2.2, 1.1, 3.3, 4.4, 5.5};
+
+  // /* Function to print an array */
+  // void printArray(double arr[], double size) {
+  //   int i;
+  //   for (i = 0; i < size; i++)
+  //     printf(" %e\n", arr[i]);
+  // }
+
+  // int n = 5;
+  // selectionSort(arr, n);
+  // printArray(arr, n);
+
   buttons_init(); // Init the buttons.
   if (buttons_read() &
       BUTTONS_BTN2_MASK) { // Read the buttons to see if BTN2 is depressed.

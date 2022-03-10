@@ -9,11 +9,11 @@ trigger.c
 transmitter.c
 hitLedTimer.c
 lockoutTimer.c
-# detector.c
-# sound.c
-# timer_ps.c
-# runningModes.c
-# runningModes2.c
+detector.c
+sound.c
+timer_ps.c
+runningModes.c
+runningModes2.c
 )
 
 add_subdirectory(sounds)

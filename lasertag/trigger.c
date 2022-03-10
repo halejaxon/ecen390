@@ -3,11 +3,16 @@
 #include "mio.h"
 #include "transmitter.h"
 
+#define START_TRIGGER_TEST_MESSAGE "Starting Trigger Test\n"
+#define END_TEST_MESSAGE "exiting test\n"
+#define ERROR_MESSAGE_TRIGGER "ERROR\n"
 #define TICK_RATE 100000
 #define DEBOUNCE_MS (50 / 1000)
 #define DEBOUNCE_COUNT (TICK_RATE * DEBOUNCE_MS)
 #define TRIGGER_GUN_TRIGGER_MIO_PIN 10
 #define GUN_TRIGGER_PRESSED 1
+#define TRIGGER_PUSHED_MESSAGE "D\n"
+#define TRIGGER_RELEASED_MESSAGE "U\n"
 
 // Uncomment for debug prints
 #define DEBUG
@@ -26,9 +31,8 @@
 enum trigger_st_t {
   init_st,       // Start here, transition out of this state on the first tick.
   waitForHit_st, // Check if the trigger input is high
-  debouncePress_st,   // Wait 50ms to see if it is a real press
-  debounceRelease_st, //
-  transmitter_st      // Activate the transmitter state machine
+  debouncePress_st, // Wait 50ms to see if it is a real press
+  transmitter_st    // Activate the transmitter state machine
 };
 static enum trigger_st_t currentState;
 
@@ -36,6 +40,7 @@ static enum trigger_st_t currentState;
 static bool triggerEnable = false;
 static bool ignoreGunInput = false;
 
+// This function returns a true is the button is pressed
 bool triggerPressed() {
   // Read from JF-2 and from BTN0
   return (buttons_read() & BUTTONS_BTN0_MASK) ||
@@ -78,14 +83,12 @@ void trigger_tick() {
   // Perform state update first.
   switch (currentState) {
   case init_st:
-    // printf("enter waitForHit_st\n");
     currentState = waitForHit_st;
     break;
   case waitForHit_st:
-  //if you sense a push then move onto the debounce state
+    // if you sense a push then move onto the debounce state
     if (triggerPressed()) {
-      DPRINTF("D\n");
-      // printf("enter debounce_st\n");
+      DPRINTF(TRIGGER_PUSHED_MESSAGE);
       currentState = debouncePress_st;
     } // move onto the wait state if not
     else {
@@ -93,37 +96,36 @@ void trigger_tick() {
     }
     break;
   case debouncePress_st:
-  //if the counter is big and the trigger is preesed still then run the transmitter
+    // if the counter is big and the trigger is preesed still then run the
+    // transmitter
     if ((debounceCtr > DEBOUNCE_COUNT) && (triggerPressed())) {
       debounceCtr = 0;
       transmitter_run();
       currentState = transmitter_st;
-    }//move onto the init state if the counter is big but it was a false alarm 
+    } // move onto the init state if the counter is big but it was a false alarm
     else if (debounceCtr > DEBOUNCE_COUNT && !(triggerPressed())) {
-
       debounceCtr = 0;
-      // printf("enter init_st\n");
       currentState = init_st;
-    }//Stay here if not 
+    } // Stay here if not
     else {
       currentState = debouncePress_st;
     }
     break;
   case transmitter_st:
-  //if the counter is big enough and the trigger still isn't pressed then stay her as a debounce.
+    // if the counter is big enough and the trigger still isn't pressed then
+    // stay her as a debounce.
     if ((debounceCtr > DEBOUNCE_COUNT) && (!triggerPressed())) {
       debounceCtr = 0;
-      DPRINTF("U\n");
+      DPRINTF(TRIGGER_RELEASED_MESSAGE);
       currentState = waitForHit_st;
-    } ///stay in this transmitter state
+    } /// stay in this transmitter state
     else {
       currentState = transmitter_st;
     }
 
-    
     break;
   default:
-    printf("error\n");// print an error message here.
+    printf(ERROR_MESSAGE_TRIGGER); // print an error message here.
     break;
   }
 
@@ -140,7 +142,7 @@ void trigger_tick() {
     debounceCtr++;
     break;
   default:
-    printf("error\n");// print an error message here.
+    printf(ERROR_MESSAGE_TRIGGER); // print an error message here.
     break;
   }
 }
@@ -149,14 +151,14 @@ void trigger_tick() {
 // The test just prints out a 'D' when the trigger or BTN0
 // is pressed, and a 'U' when the trigger or BTN0 is released.
 void trigger_runTest() {
-  printf("starting trigger_runTest.\n");
+  printf(START_TRIGGER_TEST_MESSAGE);
   trigger_init();
   trigger_enable();
   buttons_init();
-
+  // Stay her until button is pressed
   while (!(buttons_read() &
            BUTTONS_BTN2_MASK)) { // Run continuously until BTN2 is pressed.
   }
 
-  printf("exiting trigger_runTest.\n");
+  printf(END_TEST_MESSAGE);
 }

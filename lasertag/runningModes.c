@@ -268,12 +268,17 @@ void runningModes_shooter() {
   runningModes_initAll();
   // Init the ignored-frequencies so no frequencies are ignored.
   bool ignoredFrequencies[FILTER_FREQUENCY_COUNT];
-  for (uint16_t i = 0; i < FILTER_FREQUENCY_COUNT; i++)
+
+  for (uint16_t i = 0; i < FILTER_FREQUENCY_COUNT; i++) {
+
     ignoredFrequencies[i] = false;
+  }
+
 #ifdef IGNORE_OWN_FREQUENCY
   printf("Ignoring own frequency.\n");
   ignoredFrequencies[runningModes_getFrequencySetting()] = true;
 #endif
+
   detector_init(ignoredFrequencies);
   uint16_t hitCount = 0;
   detectorInvocationCount = 0; // Keep track of detector invocations.
@@ -296,9 +301,11 @@ void runningModes_shooter() {
   interrupts_enableArmInts(); // The ARM will start seeing interrupts after
                               // this.
   lockoutTimer_start(); // Ignore erroneous hits at startup (when all power
-                        // values are essentially 0).
+  // values are essentially 0).
+
   while ((!(buttons_read() & BUTTONS_BTN3_MASK)) &&
          hitCount < MAX_HIT_COUNT) { // Run until you detect btn3 pressed.
+
     transmitter_setFrequencyNumber(
         runningModes_getFrequencySetting());    // Read the switches and switch
                                                 // frequency as required.
@@ -310,8 +317,9 @@ void runningModes_shooter() {
     detectorInvocationCount++;              // Used for run-time statistics.
     detector(INTERRUPTS_CURRENTLY_ENABLED); // Interrupts are currently enabled.
     if (detector_hitDetected()) {           // Hit detected
-      hitCount++;                           // increment the hit count.
-      detector_clearHit();                  // Clear the hit.
+
+      hitCount++;          // increment the hit count.
+      detector_clearHit(); // Clear the hit.
       detector_hitCount_t
           hitCounts[DETECTOR_HIT_ARRAY_SIZE]; // Store the hit-counts here.
       detector_getHitCounts(hitCounts);       // Get the current hit counts.
@@ -320,6 +328,7 @@ void runningModes_shooter() {
     intervalTimer_stop(
         MAIN_CUMULATIVE_TIMER); // All done with actual processing.
   }
+
   interrupts_disableArmInts(); // Done with loop, disable the interrupts.
   hitLedTimer_turnLedOff();    // Save power :-)
   runningModes_printRunTimeStatistics(); // Print the run-time statistics to the

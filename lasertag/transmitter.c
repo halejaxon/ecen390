@@ -13,6 +13,11 @@
 #define TX_CONT_TRANSMIT_ST_MSG "tx_contTransmit_st\n"
 
 #define ERROR_MESSAGE "You fell through all the TX states\n"
+#define START_RUNTEST_TEST_MESSAGE "starting transmitter_runTest()\n"
+#define START_NONCONT_TEST_MESSAGE                                             \
+  "starting transmitter_runNonContinuousTest()\n"
+#define START_CONT_TEST_MESSAGE "starting transmitter_runContinuousTest()\n"
+#define END_TEST_MESSAGE "exiting test\n"
 
 #define TRANSMIT_TIME 20000
 #define TICK_RATE 100000
@@ -93,12 +98,12 @@ uint16_t getPulseWidth(uint16_t frequencyNumber) {
   return round(TICK_RATE / (HALF * frequencies[frequencyNumber]));
 }
 
-//Functions writes to the mio pins to write a high value
+// Functions writes to the mio pins to write a high value
 void transmitter_set_jf1_to_one() {
   mio_writePin(TRANSMITTER_OUTPUT_PIN,
                TRANSMITTER_HIGH_VALUE); // Write a '1' to JF-1.
 }
-//Function writes to the mio pins to write a low value
+// Function writes to the mio pins to write a low value
 void transmitter_set_jf1_to_zero() {
   mio_writePin(TRANSMITTER_OUTPUT_PIN,
                TRANSMITTER_LOW_VALUE); // Write a '1' to JF-1.
@@ -110,7 +115,8 @@ void transmitter_init() {
   mio_init(false); // false disables any debug printing if there is a system
                    // failure during init.
   mio_setPinAsOutput(TRANSMITTER_OUTPUT_PIN); // Configure the signal direction
-                                              // of the pin to be an output.
+  // of the pin to be an output.
+  mio_writePin(TRANSMITTER_OUTPUT_PIN, TRANSMITTER_LOW_VALUE);
 }
 
 // Starts the transmitter.
@@ -135,17 +141,15 @@ void transmitter_tick() {
   static uint32_t transCtr, pulseCtr;
   static uint16_t currFrequencyNumber;
 
-  // Debugging
-  // txDebugStatePrint();
-
   // Perform state update first.
   switch (currentState) {
   case init_st:
     // Set counter to zero
     transCtr = 0;
     pulseCtr = 0;
-    pinInput = false;
-// checking for continuous mode and if the transmitter is running to give pin a different value
+    pinInput = true;
+    // checking for continuous mode and if the transmitter is running to give
+    // pin a different value
     if (isContinuous && isRunning) {
       pinInput = !pinInput;
       //// if the pinInput is true then set the output to one.
@@ -175,7 +179,7 @@ void transmitter_tick() {
 
       // State update
       currentState = transmit_st;
-    }// stay in this state 
+    }      // stay in this state
     else { // No change
       // State update
       currentState = init_st;
@@ -183,7 +187,6 @@ void transmitter_tick() {
     break;
   case transmit_st:
 
-    // DPRINTF("%d", pinInput);
     // if thecounter is greater than the TRANSMIT_TIME then reset variables and
     // return to init state.
     if (transCtr > TRANSMIT_TIME) {
@@ -197,15 +200,15 @@ void transmitter_tick() {
       // State update
       currentState = init_st;
 
-    } 
-    // Once the pulse count gets big enough then we can assign values and reset the counter.
+    }
+    // Once the pulse count gets big enough then we can assign values and reset
+    // the counter.
     else if (pulseCtr > getPulseWidth(currFrequencyNumber)) {
       // Run the tx
       pinInput = !pinInput;
       pulseCtr = 0;
 
       // Printing new line if DEBUG is on.
-      // DPRINTF("\n");
       // If pinout istrue then output should be 1.
       if (pinInput) {
         transmitter_set_jf1_to_one();
@@ -220,14 +223,12 @@ void transmitter_tick() {
     break;
   case contTransmit_st:
     // Printing the output if the DEBUG is true.
-    // DPRINTF("%d", pinInput);
     // If thecounter is above the TRAMSIT_TIME then return to Inital state.
     if (pulseCtr > getPulseWidth(txFrequencyNumber) && isContinuous) {
       // Run the tx
       pinInput = !pinInput;
       pulseCtr = 0;
       // Printing new line if DEBUG is on.
-      // DPRINTF("\n");
       // If pinout istrue then output should be 1.
       if (pinInput) {
         transmitter_set_jf1_to_one();
@@ -238,10 +239,12 @@ void transmitter_tick() {
 
       // State update
       currentState = contTransmit_st;
+      // if is continuous is true go to contransmit_st
     } else if (isContinuous) {
-      /// State update
+
       currentState = contTransmit_st;
-    } else {
+    } // if is continuous is not true go to init_st
+    else {
       // State update
       currentState = init_st;
     }
@@ -270,15 +273,15 @@ void transmitter_tick() {
 
 // Tests the transmitter.
 void transmitter_runTest() {
-  printf("starting transmitter_runTest()\n");
+  printf(START_RUNTEST_TEST_MESSAGE);
   utils_msDelay(TRANSMITTER_TEST_TICK_PERIOD_IN_MS);
   mio_init(false);
   buttons_init();     // Using buttons
   switches_init();    // and switches.
   transmitter_init(); // init the transmitter.
   transmitter_setContinuousMode(false);
-   // Prints diagnostics to stdio.
-   //stay in this loop until they are pushed
+  // Prints diagnostics to stdio.
+  // stay in this loop until they are pushed
   while (!(buttons_read() &
            BUTTONS_BTN1_MASK)) { // Run continuously until BTN1 is pressed.
     uint16_t switchValue =
@@ -288,21 +291,20 @@ void transmitter_runTest() {
         switchValue); // set the frequency number based upon switch value.
     transmitter_run();
     // Start the transmitter.
-    //In here until the transmitter stops running
+    // In here until the transmitter stops running
     while (transmitter_running()) { // Keep ticking until it is done.
       transmitter_tick();           // tick.
       utils_msDelay(
           TRANSMITTER_TEST_TICK_PERIOD_IN_MS); // short delay between ticks.
     }
-    printf("completed one test period.\n");
   }
-  //Delay for dounce
+  // Delay for dounce
   do {
     utils_msDelay(BOUNCE_DELAY);
-  } 
-  //wait for buttons
+  }
+  // wait for buttons
   while (buttons_read());
-  printf("exiting transmitter_runTest()\n");
+  printf(END_TEST_MESSAGE);
 }
 
 // Runs the transmitter continuously.
@@ -326,14 +328,14 @@ void transmitter_setContinuousMode(bool continuousModeFlag) {
 // spot between 200 ms pulses.
 // Should change frequency in response to the slide switches.
 void transmitter_runNoncontinuousTest() {
-  printf("starting transmitter_runNonContinuousTest()\n");
+  printf(START_NONCONT_TEST_MESSAGE);
   utils_msDelay(TRANSMITTER_TEST_TICK_PERIOD_IN_MS);
   mio_init(false);
   buttons_init();     // Using buttons
   switches_init();    // and switches.
   transmitter_init(); // init the transmitter.
   transmitter_setContinuousMode(false);
-
+  // stay in this phase until the buttons are pressed
   while (!(buttons_read() & BUTTONS_BTN2_MASK)) {
     uint16_t switchValue =
         switches_read() %
@@ -341,13 +343,16 @@ void transmitter_runNoncontinuousTest() {
     transmitter_setFrequencyNumber(
         switchValue); // set the frequency number based upon switch value.
     transmitter_run();
+    // Stay here until transmitter is not running
+    while (transmitter_running())
+      ;
     utils_msDelay(DELAY_TIME);
   }
+  // debouncer
   do {
     utils_msDelay(BOUNCE_DELAY);
   } while (buttons_read());
-  printf("exiting transmitter_runNonContinuousTest()\n");
-
+  printf(END_TEST_MESSAGE);
 }
 
 // Tests the transmitter in continuous mode.
@@ -360,7 +365,7 @@ void transmitter_runNoncontinuousTest() {
 // Test runs until BTN1 is pressed.
 void transmitter_runContinuousTest() {
   // Filler
-  printf("starting transmitter_runContinuousTest()\n");
+  printf(START_CONT_TEST_MESSAGE);
   utils_msDelay(TRANSMITTER_TEST_TICK_PERIOD_IN_MS);
   mio_init(false);
   buttons_init();     // Using buttons
@@ -376,8 +381,7 @@ void transmitter_runContinuousTest() {
         FILTER_FREQUENCY_COUNT; // Compute a safe number from the switches.
     transmitter_setFrequencyNumber(
         switchValue); // set the frequency number based upon switch value.
-
   }
   transmitter_setContinuousMode(false);
-  printf("exiting transmitter_runTest()\n");
+  printf(END_TEST_MESSAGE);
 }

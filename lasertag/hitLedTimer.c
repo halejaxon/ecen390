@@ -15,6 +15,8 @@
 #define HL_LIGHT_ST_MSG "hl_light_st\n"
 
 #define ERROR_MESSAGE "You fell through all the HL states\n"
+#define END_TEST_MESSAGE "exiting test\n"
+#define START_HL_TEST_MESSAGE "starting hitLedTimer_runTest()\n"
 
 #define TICK_RATE 100000
 #define LIGHT_TIME 500 // Time the LED should be lit in ms
@@ -115,12 +117,13 @@ void hitLedTimer_tick() {
     }
     break;
   case light_st:
-    //conter is still small so stay here
+    // conter is still small so stay here
     if (ledCtr < LIGHT_COUNT) { // Stay in this state for 1/2 second
       // State update
       currentState = light_st;
-    } //// Once it has been long enough, turn the light off and go back to waiting
-    else { 
+    } //// Once it has been long enough, turn the light off and go back to
+      /// waiting
+    else {
       // We have finished with the current received hit
       receivedHit = false;
       ledCtr = 0;
@@ -131,18 +134,18 @@ void hitLedTimer_tick() {
     }
     break;
   case final_st:
-  // Return to init once enable is set to false
-    if (!hlEnable) { 
+    // Return to init once enable is set to false
+    if (!hlEnable) {
       // State update
       currentState = init_st;
     } // Otherwise keep waiting in final state
-    else { 
+    else {
       // State update
       currentState = final_st;
     }
     break;
   default:
-    printf("error\n");// print an error message here.
+    printf(ERROR_MESSAGE); // print an error message here.
     break;
   }
 
@@ -153,10 +156,10 @@ void hitLedTimer_tick() {
   case waitForHit_st:
     break;
   case light_st:
-    ledCtr++;
+    ledCtr++; // increment ledCtr
     break;
   default:
-    printf("error\n");// print an error message here.
+    printf(ERROR_MESSAGE); // print an error message here.
     break;
   }
 }
@@ -192,29 +195,27 @@ void hitLedTimer_enable() { hlEnable = true; }
 // The test continuously blinks the hit-led on and off.
 void hitLedTimer_runTest() {
   // Initialize everything first
-  printf("starting hitLedTimer_runTest()\n");
+  printf(START_HL_TEST_MESSAGE);
   mio_init(false);
   buttons_init();     // Using buttons
   switches_init();    // and switches.
   hitLedTimer_init(); // init the hitLedTimer
-
-  while (!(buttons_read() & BUTTONS_BTN1_MASK)) { // Run continuously until BTN1
+                      // Run continuously until BTN1
+  while (!(buttons_read() & BUTTONS_BTN1_MASK)) {
     // is pressed
     hitLedTimer_start();
     hitLedTimer_enable();
     // Start the transmitter.
     while (hitLedTimer_running()) { // Keep ticking until it is done.
-      // tick.
-      // short delay between ticks
     }
     hitLedTimer_disable();
     utils_msDelay(LED_DELAY_TIME);
   }
-  //Insert a delay
+  // Insert a delay
   do {
     utils_msDelay(BOUNCE_DELAY);
   }
-  //once the buttons gets pressed then we read our print statement.
-   while (buttons_read());
-  printf("exiting hitLedTimer_runTest()\n");
+  // once the buttons gets pressed then we read our print statement.
+  while (buttons_read());
+  printf(END_TEST_MESSAGE);
 }

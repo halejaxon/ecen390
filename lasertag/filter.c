@@ -1,7 +1,8 @@
 #include "filter.h"
+#include <stdio.h>
 #include <stdlib.h>
 
-#define IIR_A_COEFFICIENT_COUNT 10 // IS THIS SUPPOSED TO BE 10??
+#define IIR_A_COEFFICIENT_COUNT 10
 #define IIR_B_COEFFICIENT_COUNT 11
 #define FILTER_IIR_FILTER_COUNT 10
 #define QUEUE_INIT_VALUE 0.0
@@ -319,6 +320,8 @@ double filter_computePower(uint16_t filterNumber, bool forceComputeFromScratch,
 
   oldestValues[filterNumber] =
       queue_readElementAt(&(outputQueueArr[filterNumber]), 0);
+  // printf("currentPowerValue[filterNumber]: %f\n",
+  // currentPowerValue[filterNumber]);
   return currentPowerValue[filterNumber];
 }
 

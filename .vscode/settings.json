@@ -8,6 +8,7 @@
     "C_Cpp.clang_format_fallbackStyle": "LLVM",
     "files.associations": {
         "switches.h": "c",
-        "display.h": "c"
+        "display.h": "c",
+        "stdbool.h": "c"
     }
 }

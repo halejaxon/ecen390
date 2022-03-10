@@ -15,6 +15,9 @@
 #define LO_COUNTER_ST_MSG "lo_counter_st\n"
 
 #define ERROR_MESSAGE "You fell through all the HL states\n"
+#define END_TEST_MESSAGE "exiting test\n"
+#define REPORT_DURATION "Duration: %f\n"
+#define START_LOCKOUT_TEST_MESSAGE "starting lockOutTimer_runTest()\n"
 
 #define TICK_RATE 100000
 #define LOCKOUT_TIME 500 // Time the LED should be lit in ms
@@ -79,30 +82,31 @@ void lockoutTimer_tick() {
   // Declare static variables unique to tick fct
   static uint32_t lockoutCtr;
 
-  // Debugging
-  // loDebugStatePrint();
-
   // Perform state update first.
   switch (currentState) {
   case init_st:
-  //counting has to be true in order to get to the counter state
+    // counting has to be true in order to get to the counter state
     if (counting) {
       // Set counter to zero
       lockoutCtr = 0;
 
       // State update
       currentState = counter_st;
-    } else {
+    }
+    // if not then stay in this state
+    else {
       // State update
       currentState = init_st;
     }
 
     break;
   case counter_st:
-    if (lockoutCtr < LOCKOUT_COUNT) { // Stay here till the counter is exceeded
+    // Stay here till the counter is exceeded
+    if (lockoutCtr < LOCKOUT_COUNT) {
       // State update
       currentState = counter_st;
-    } else { // Go back and wait before counting again
+    } // Go back and wait before counting again
+    else {
 
       // Set counting to false
       counting = false;
@@ -112,7 +116,6 @@ void lockoutTimer_tick() {
     }
     break;
   default:
-    // print an error message here.
     break;
   }
 
@@ -122,10 +125,9 @@ void lockoutTimer_tick() {
 
     break;
   case counter_st:
-    lockoutCtr++;
+    lockoutCtr++; // Increment lockoutCtr
     break;
   default:
-    // print an error message here.
     break;
   }
 }
@@ -137,7 +139,7 @@ void lockoutTimer_tick() {
 // This test uses the interval timer to determine correct delay for
 // the interval timer.
 bool lockoutTimer_runTest() {
-  printf("starting lockOutTimer_runTest()\n");
+  printf(START_LOCKOUT_TEST_MESSAGE);
   mio_init(false);
   buttons_init();                              // Using buttons
   switches_init();                             // and switches.
@@ -145,22 +147,18 @@ bool lockoutTimer_runTest() {
   intervalTimer_init(INTERVAL_TIMER_TIMER_1);  // Init timer 0.
   intervalTimer_reset(INTERVAL_TIMER_TIMER_1); // Reset timer 0.
 
-  // is pressed
+  // Start recording the time
   intervalTimer_start(INTERVAL_TIMER_TIMER_1);
   lockoutTimer_start();
   // Start the transmitter.
   while (lockoutTimer_running()) { // Keep ticking until it is done.
-    // lockoutTimer_tick();           // tick.
-    // utils_msDelay(LOCKOUT_TEST_TICK_PERIOD_MS); // short delay between ticks
   }
   intervalTimer_stop(INTERVAL_TIMER_TIMER_1);
-  // printf("completed one test period.\n");
-  // utils_msDelay(LOCKOUT_TIME);
 
-  printf("Duration: %f\n",
+  // Report the duration
+  printf(REPORT_DURATION,
          intervalTimer_getTotalDurationInSeconds(INTERVAL_TIMER_TIMER_1));
-  printf("exiting lockoutTimer_runTest()\n");
+  printf(END_TEST_MESSAGE);
 
   return false;
-  // FILLER
 }
