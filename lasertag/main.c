@@ -104,12 +104,6 @@ int main() {
   // The program comes up in continuous mode.
   // Hold BTN2 while the program starts to come up in shooter mode.
 
-  // void swap(double *xpointer, double *ypointer) {
-  //   uint16_t temp = *xpointer;
-  //   *xpointer = *ypointer;
-  //   *ypointer = temp;
-  // }
-
   // void selectionSort(double array[], uint8_t lengthArr) {
   //   uint16_t index1, index2, minIdx;
 
@@ -129,25 +123,34 @@ int main() {
   //     array[minIdx] = array[index1];
   //     array[index1] = temp;
   //   }
+  // }
 
-  //   for (int i = 0; i < lengthArr; i++) {
-  //     printf("value: %e\n", array[i]);
+  // // // sde
+  // double arr[6] = {2.2, 1.6, 1.1, 3.3, 5.5, 4.4};
+
+  // // /* Function to print an array */
+  // // void printArray(double arr[], double size) {
+  // //   int i;
+  // //   for (i = 0; i < size; i++)
+  // //     printf(" %e\n", arr[i]);
+  // // }
+
+  // double max = arr[0];
+  // uint16_t maxIndex = 0;
+  // for (uint16_t i = 0; i < 6; i++) {
+  //   if (max < arr[i]) {
+  //     max = arr[i];
+  //     maxIndex = i;
   //   }
   // }
 
-  // // sde
-  // double arr[5] = {2.2, 1.1, 3.3, 4.4, 5.5};
+  // printf("max: %le\n", max);
 
-  // /* Function to print an array */
-  // void printArray(double arr[], double size) {
-  //   int i;
-  //   for (i = 0; i < size; i++)
-  //     printf(" %e\n", arr[i]);
-  // }
-
-  // int n = 5;
+  // int n = 6;
   // selectionSort(arr, n);
   // printArray(arr, n);
+
+  // printf("%le\n", arr[3]);
 
   buttons_init(); // Init the buttons.
   if (buttons_read() &

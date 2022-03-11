@@ -317,9 +317,8 @@ void runningModes_shooter() {
     detectorInvocationCount++;              // Used for run-time statistics.
     detector(INTERRUPTS_CURRENTLY_ENABLED); // Interrupts are currently enabled.
     if (detector_hitDetected()) {           // Hit detected
-
-      hitCount++;          // increment the hit count.
-      detector_clearHit(); // Clear the hit.
+      hitCount++;                           // increment the hit count.
+      detector_clearHit();                  // Clear the hit.
       detector_hitCount_t
           hitCounts[DETECTOR_HIT_ARRAY_SIZE]; // Store the hit-counts here.
       detector_getHitCounts(hitCounts);       // Get the current hit counts.

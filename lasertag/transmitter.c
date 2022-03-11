@@ -141,6 +141,9 @@ void transmitter_tick() {
   static uint32_t transCtr, pulseCtr;
   static uint16_t currFrequencyNumber;
 
+  // Debugging
+  txDebugStatePrint();
+
   // Perform state update first.
   switch (currentState) {
   case init_st:

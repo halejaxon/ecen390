@@ -14,6 +14,7 @@
 #include "runningModes.h"
 
 #define NUM_FREQUENCIES 10
+#define DECIMATION_FACTOR 10
 #define NUM_FUDGE_FACTORS 3
 #define MEDIAN 5
 
@@ -67,6 +68,7 @@ double detector_getMedian() {
   for (uint16_t i = 0; i < NUM_FREQUENCIES; i++) {
     // Stuff
     sortedArray[i] = filter_getCurrentPowerValue(i);
+    // printf("%d: %le\n", i, sortedArray[i]);
   }
   // qsort(sortedArray, NUM_FREQUENCIES, sizeof(double), detector_cmpfunc);
   selectionSort(sortedArray, NUM_FREQUENCIES);
@@ -105,6 +107,10 @@ void detector(bool interruptsCurrentlyEnabled) {
     // Do stuff
     // Get the adc value
     uint32_t rawAdcValue = isr_removeDataFromAdcBuffer();
+
+    // Re-enable
+    interrupts_enableArmInts();
+
     // Map adc value to [-1.0, 1.0]
     double scaledAdcValue = detector_getScaledAdcValue(rawAdcValue);
     // Add to filter
@@ -113,15 +119,18 @@ void detector(bool interruptsCurrentlyEnabled) {
 
     // Decimation - Only run these steps if it has been 10 adds since the last
     // time
-    if (filterAddCount >= NUM_FREQUENCIES) {
+    if (filterAddCount >= DECIMATION_FACTOR) {
+      // Reset
+      filterAddCount = 0;
       // Run FIR filter (not filter number-specific)
       filter_firFilter();
       // Run IIR and power computations for each frequency
+      // printf("Computing power\n");
       for (uint16_t i = 0; i < NUM_FREQUENCIES; i++) {
         // IIR
         filter_iirFilter(i);
         // Power
-        filter_computePower(i, true,
+        filter_computePower(i, false,
                             false); // No need to compute from scratch or debug
       }
       // double powerVals[10];
@@ -129,6 +138,7 @@ void detector(bool interruptsCurrentlyEnabled) {
       // for (int i = 0; i < 10; i++) {
       //   printf("value: %f\n", powerVals[i]);
       // }
+
       // Now check to see if a hit was detected (at a frequency we care about)
       if (!lockoutTimer_running() && detector_hitDetected() &&
           !(frequenciesIgnored[detector_getFrequencyNumberOfLastHit()])) {
@@ -143,8 +153,6 @@ void detector(bool interruptsCurrentlyEnabled) {
       }
     }
 
-    // Re-enable
-    interrupts_enableArmInts();
   } else {
     // Proceed without needing to disable
     // Get the adc value
@@ -158,6 +166,7 @@ void detector(bool interruptsCurrentlyEnabled) {
     // Decimation - Only run these steps if it has been 10 adds since the last
     // time
     if (filterAddCount >= NUM_FREQUENCIES) {
+      filterAddCount++;
       // Run FIR filter (not filter number-specific)
       filter_firFilter();
       // Run IIR and power computations for each frequency
@@ -222,9 +231,8 @@ bool detector_hitDetected() {
 
 // Returns the frequency number that caused the hit.
 uint16_t detector_getFrequencyNumberOfLastHit() {
-  // Filler
-  uint16_t filler;
-  return filler;
+  // Get value from global var
+  return lastHitFrequency;
 }
 
 // Clear the detected hit once you have accounted for it.
