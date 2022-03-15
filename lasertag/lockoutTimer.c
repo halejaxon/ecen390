@@ -12,9 +12,10 @@
 
 // SM debugging messages
 #define LO_INIT_ST_MSG "lo_init_st\n"
+#define LO_WAIT_ST_MSG "lo_wait_st\n"
 #define LO_COUNTER_ST_MSG "lo_counter_st\n"
 
-#define ERROR_MESSAGE "You fell through all the HL states\n"
+#define ERROR_MESSAGE_LO "You fell through all the LO states\n"
 #define END_TEST_MESSAGE "exiting test\n"
 #define REPORT_DURATION "Duration: %f\n"
 #define START_LOCKOUT_TEST_MESSAGE "starting lockOutTimer_runTest()\n"
@@ -61,8 +62,14 @@ void loDebugStatePrint() {
     case init_st:
       printf(LO_INIT_ST_MSG);
       break;
+    case wait_st:
+      printf(LO_WAIT_ST_MSG);
+      break;
     case counter_st:
       printf(LO_COUNTER_ST_MSG);
+      break;
+    default:
+      printf(ERROR_MESSAGE_LO);
       break;
     }
   }
@@ -81,6 +88,9 @@ bool lockoutTimer_running() { return counting; }
 void lockoutTimer_tick() {
   // Declare static variables unique to tick fct
   static uint32_t lockoutCtr;
+
+  // Debugging
+  //loDebugStatePrint();
 
   // Perform state update first.
   switch (currentState) {
@@ -116,6 +126,7 @@ void lockoutTimer_tick() {
     }
     break;
   default:
+    //printf(ERROR_MESSAGE_LO);
     break;
   }
 

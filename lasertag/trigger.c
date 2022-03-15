@@ -2,6 +2,7 @@
 #include "buttons.h"
 #include "mio.h"
 #include "transmitter.h"
+#include <stdio.h>
 
 #define START_TRIGGER_TEST_MESSAGE "Starting Trigger Test\n"
 #define END_TEST_MESSAGE "exiting test\n"
@@ -15,7 +16,7 @@
 #define TRIGGER_RELEASED_MESSAGE "U\n"
 
 // Uncomment for debug prints
-#define DEBUG
+//#define DEBUG
 
 #if defined(DEBUG)
 #include "xil_printf.h"

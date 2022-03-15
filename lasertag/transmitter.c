@@ -3,6 +3,7 @@
 #include "display.h"
 #include "mio.h"
 #include "switches.h"
+#include "filter.h"
 #include <math.h>
 #include <stdio.h>
 #include <utils.h>
@@ -12,7 +13,7 @@
 #define TX_TRANSMIT_ST_MSG "tx_transmit_st\n"
 #define TX_CONT_TRANSMIT_ST_MSG "tx_contTransmit_st\n"
 
-#define ERROR_MESSAGE "You fell through all the TX states\n"
+#define ERROR_MESSAGE_TX "You fell through all the TX states\n"
 #define START_RUNTEST_TEST_MESSAGE "starting transmitter_runTest()\n"
 #define START_NONCONT_TEST_MESSAGE                                             \
   "starting transmitter_runNonContinuousTest()\n"
@@ -90,12 +91,16 @@ void txDebugStatePrint() {
     case contTransmit_st:
       printf(TX_CONT_TRANSMIT_ST_MSG);
       break;
+    default:
+      printf(ERROR_MESSAGE_TX);
+      break;
     }
   }
 }
 // Function returns the pulse widths with respect to the given frequency.
 uint16_t getPulseWidth(uint16_t frequencyNumber) {
-  return round(TICK_RATE / (HALF * frequencies[frequencyNumber]));
+  double width = TICK_RATE / (HALF * (double) frequencies[frequencyNumber]);
+  return round(width);
 }
 
 // Functions writes to the mio pins to write a high value
@@ -142,7 +147,7 @@ void transmitter_tick() {
   static uint16_t currFrequencyNumber;
 
   // Debugging
-  txDebugStatePrint();
+  //txDebugStatePrint();
 
   // Perform state update first.
   switch (currentState) {
@@ -206,7 +211,8 @@ void transmitter_tick() {
     }
     // Once the pulse count gets big enough then we can assign values and reset
     // the counter.
-    else if (pulseCtr > getPulseWidth(currFrequencyNumber)) {
+    else if (pulseCtr >= filter_frequencyTickTable[currFrequencyNumber] / HALF) {
+
       // Run the tx
       pinInput = !pinInput;
       pulseCtr = 0;
@@ -227,7 +233,10 @@ void transmitter_tick() {
   case contTransmit_st:
     // Printing the output if the DEBUG is true.
     // If thecounter is above the TRAMSIT_TIME then return to Inital state.
-    if (pulseCtr > getPulseWidth(txFrequencyNumber) && isContinuous) {
+    if ((pulseCtr >= filter_frequencyTickTable[txFrequencyNumber] / HALF) && isContinuous) {
+       // Report (debugging)
+      //printf("Pulse width: %d\n", getPulseWidth(txFrequencyNumber));
+    
       // Run the tx
       pinInput = !pinInput;
       pulseCtr = 0;
@@ -253,6 +262,7 @@ void transmitter_tick() {
     }
     break;
   default:
+    //printf(ERROR_MESSAGE_TX);
     break;
   }
 

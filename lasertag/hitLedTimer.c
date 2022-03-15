@@ -14,7 +14,7 @@
 #define HL_WAIT_FOR_HIT_ST_MSG "hl_waitForHit_st\n"
 #define HL_LIGHT_ST_MSG "hl_light_st\n"
 
-#define ERROR_MESSAGE "You fell through all the HL states\n"
+#define ERROR_MESSAGE_HL "You fell through all the HL states\n"
 #define END_TEST_MESSAGE "exiting test\n"
 #define START_HL_TEST_MESSAGE "starting hitLedTimer_runTest()\n"
 
@@ -72,6 +72,9 @@ void hlDebugStatePrint() {
     case light_st:
       printf(HL_LIGHT_ST_MSG);
       break;
+    default:
+      printf(ERROR_MESSAGE_HL);
+      break;
     }
   }
 }
@@ -88,7 +91,7 @@ void hitLedTimer_tick() {
   static uint32_t ledCtr;
 
   // Debugging
-  // hlDebugStatePrint();
+  //hlDebugStatePrint();
 
   // Perform state update first.
   switch (currentState) {
@@ -145,7 +148,7 @@ void hitLedTimer_tick() {
     }
     break;
   default:
-    printf(ERROR_MESSAGE); // print an error message here.
+    //printf(ERROR_MESSAGE_HL); // print an error message here.
     break;
   }
 
@@ -159,7 +162,7 @@ void hitLedTimer_tick() {
     ledCtr++; // increment ledCtr
     break;
   default:
-    printf(ERROR_MESSAGE); // print an error message here.
+    //printf(ERROR_MESSAGE_HL); // print an error message here.
     break;
   }
 }
