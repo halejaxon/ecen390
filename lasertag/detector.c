@@ -18,9 +18,15 @@
 #define NUM_FUDGE_FACTORS 5
 #define MEDIAN 5
 #define NOT_TEST false
+// #define RUN_TEST_PRINT_EXPECTED_HIT "Expected: Hit detected = 1 (aka true) at
+// frequency 4.\n Actual: Hit "
+//          "detected = %d at frequency %d\n"
+// #define RUN_TEST_PRINT_ACTUAL "Expected: Hit detected = 0 (aka false).\n
+// Actual: Hit detected = %d\n"
 
 static uint16_t fudgeFactors[NUM_FUDGE_FACTORS] = {100, 200, 500, 1000, 10000};
-static double testArray[NUM_FREQUENCIES] = {0.12, 0.15, 0.14, 0.30, 700, 0.22, 0.21, 0.19, 0.14, 0.15};
+static double testArray[NUM_FREQUENCIES] = {0.12, 0.15, 0.14, 0.30, 700,
+                                            0.22, 0.21, 0.19, 0.14, 0.15};
 static double sortedArray[NUM_FREQUENCIES];
 static bool allIgnored;
 static bool frequenciesIgnored[NUM_FREQUENCIES];
@@ -30,11 +36,11 @@ static bool hitDetected;
 static uint16_t fudgeFactorIndex = 3;
 static uint16_t lastHitFrequency = 0;
 
-// Sorting function - takes in an array and a length and changes the original array to be sorted
+// Sorting function - takes in an array and a length and changes the original
+// array to be sorted
 void selectionSort(double array[], uint8_t lengthArr) {
   // Initialize indices to use
   uint16_t index1, index2, minIdx;
-
   // One by one move boundary of unsorted subarray
   for (index1 = 0; index1 < lengthArr - 1; index1++) {
     // Find the minimum element in unsorted array
@@ -54,16 +60,15 @@ void selectionSort(double array[], uint8_t lengthArr) {
   }
 }
 
-// Median retriever function - pass in the power array you want to find the median of and it will return a new 
+// Median retriever function - pass in the power array you want to find the
+// median of and it will return a new
 double detector_getMedian(double powerArr[]) {
   // Iterate through and copy values from the get power array and assign them to
   // a new array.
   for (uint16_t i = 0; i < NUM_FREQUENCIES; i++) {
     // Copy
-    //sortedArray[i] = filter_getCurrentPowerValue(i);
     sortedArray[i] = powerArr[i];
   }
-  // qsort(sortedArray, NUM_FREQUENCIES, sizeof(double), detector_cmpfunc);
   selectionSort(sortedArray, NUM_FREQUENCIES);
   return sortedArray[MEDIAN];
 }
@@ -84,35 +89,29 @@ void detector_init(bool ignoredFrequencies[]) {
   // Enable hitLedTimer
   hitLedTimer_enable();
 }
-
+// returns true if the detector has recieved a hit... false otherwise.
 bool hitDetector(bool testMode) {
   // Sort the power values to find the median
   double powerArr[NUM_FREQUENCIES];
 
   // Check if currently testing or actually running
-  if (testMode) { // If yes, copy test data
+  if (testMode) {
+    // If yes, copy test data
     for (uint16_t i = 0; i < NUM_FREQUENCIES; i++) {
       powerArr[i] = testArray[i];
     }
-  }
-  else { // If not testing, copy actual power values
+  } // If not testing, copy actual power values
+  else {
     filter_getCurrentPowerValues(powerArr); // Real power values
   }
-  
-  double median = detector_getMedian(powerArr); // Pass them into the get median function
 
-  // Find index of max power value
-  // double max = filter_getCurrentPowerValue(0);
-  // uint16_t maxIndex = 0;
-  // for (uint16_t i = 0; i < NUM_FREQUENCIES; i++) {
-  //   if (max < filter_getCurrentPowerValue(i)) {
-  //     max = filter_getCurrentPowerValue(i);
-  //     maxIndex = i;
-  //   }
-  // }
+  double median =
+      detector_getMedian(powerArr); // Pass them into the get median function
   double max = powerArr[0];
   uint16_t maxIndex = 0;
+  // Iterate through and get the max values
   for (uint16_t i = 0; i < NUM_FREQUENCIES; i++) {
+    // if bigger than the max then assign it as the new max
     if (max < powerArr[i]) {
       max = powerArr[i];
       maxIndex = i;
@@ -124,7 +123,8 @@ bool hitDetector(bool testMode) {
     // If yes, return true AND set frequency number of last hit
     lastHitFrequency = maxIndex;
     return true;
-  } else {
+  } // return false otherwise
+  else {
     return false;
   }
 }
@@ -141,8 +141,10 @@ bool hitDetector(bool testMode) {
 // Your frequency is simply the frequency indicated by the slide switches
 void detector(bool interruptsCurrentlyEnabled) {
   uint32_t elementCount = isr_adcBufferElementCount();
+  // iterate through all of the elements  and collect data from the ADC
   for (uint32_t i = 0; i < elementCount; i++) {
     uint32_t rawAdcValue = 0;
+    // Only disable is the interrupts are enabled
     if (interruptsCurrentlyEnabled) {
       // Disable them first
       interrupts_disableArmInts();
@@ -153,13 +155,10 @@ void detector(bool interruptsCurrentlyEnabled) {
 
       // Re-enable
       interrupts_enableArmInts();
-    }
+    } // Get the adc value without needing to disable interrupts
     else {
-      // Get the adc value without needing to disable interrupts
       rawAdcValue = isr_removeDataFromAdcBuffer();
     }
-
-    //printf("adc val: %d\n", rawAdcValue);
 
     // Map adc value to [-1.0, 1.0]
     double scaledAdcValue = detector_getScaledAdcValue(rawAdcValue);
@@ -175,7 +174,6 @@ void detector(bool interruptsCurrentlyEnabled) {
       // Run FIR filter (not filter number-specific)
       filter_firFilter();
       // Run IIR and power computations for each frequency
-      // printf("Computing power\n");
       for (uint16_t i = 0; i < NUM_FREQUENCIES; i++) {
         // IIR
         filter_iirFilter(i);
@@ -183,11 +181,6 @@ void detector(bool interruptsCurrentlyEnabled) {
         filter_computePower(i, false,
                             false); // No need to compute from scratch or debug
       }
-      // double powerVals[10];
-      // filter_getCurrentPowerValues(powerVals);
-      // for (int i = 0; i < 10; i++) {
-      //   printf("value: %f\n", powerVals[i]);
-      // }
 
       // Now check to see if a hit was detected (at a frequency we care about)
       if (!lockoutTimer_running() && hitDetector(NOT_TEST) &&
@@ -202,47 +195,7 @@ void detector(bool interruptsCurrentlyEnabled) {
         hitDetected = true;
       }
     }
-
-    // } else {
-    //   // Proceed without needing to disable
-    //   // Get the adc value
-    //   uint32_t rawAdcValue = isr_removeDataFromAdcBuffer();
-    //   // Map adc value to [-1.0, 1.0]
-    //   double scaledAdcValue = 2 * (double)rawAdcValue / 4095 - 1.0;
-    //   // Add to filter
-    //   filter_addNewInput(scaledAdcValue);
-    //   filterAddCount++;
-
-    //   // Decimation - Only run these steps if it has been 10 adds since the last
-    //   // time
-    //   if (filterAddCount >= NUM_FREQUENCIES) {
-    //     filterAddCount++;
-    //     // Run FIR filter (not filter number-specific)
-    //     filter_firFilter();
-    //     // Run IIR and power computations for each frequency
-    //     for (uint16_t i = 0; i < NUM_FREQUENCIES; i++) {
-    //       // IIR
-    //       filter_iirFilter(i);
-    //       // Power
-    //       filter_computePower(i, false,
-    //                           false); // No need to compute from scratch or debug
-    //     }
-    //     // Now check to see if a hit was detected (at a frequency we care about)
-    //     if (!lockoutTimer_running() && detector_hitDetected() &&
-    //         !(frequenciesIgnored[detector_getFrequencyNumberOfLastHit()])) {
-    //       // Start the lockout timer and hitLed timer
-    //       lockoutTimer_start();
-    //       hitLedTimer_start();
-    //       // Increment the hit count
-    //       hitCount[detector_getFrequencyNumberOfLastHit()] =
-    //           hitCount[detector_getFrequencyNumberOfLastHit()] + 1;
-    //       // Raise the flag
-    //       hitDetected = true;
-    //     }
-    //   }
-    // }
   }
-  
 }
 
 // Returns true if a hit was detected.
@@ -297,7 +250,6 @@ void detector_setFudgeFactorIndex(uint32_t factor) { // Filler
 detector_status_t detector_sort(uint32_t *maxPowerFreqNo,
                                 double unsortedValues[],
                                 double sortedValues[]) {
-  // Filler
   detector_status_t filler;
   return filler;
 }
@@ -313,31 +265,30 @@ double detector_getScaledAdcValue(isr_AdcValue_t adcValue) {
 
 // Students implement this as part of Milestone 3, Task 3.
 void detector_runTest() {
-  // Fake data 
-  // double fakeData[10] = {0.12, 0.15, 0.14, 0.30, 700, 0.22, 0.21, 0.19, 0.14, 0.15};
   uint16_t fakeFudgeFactorInd = 3;
   detector_setFudgeFactorIndex(fakeFudgeFactorInd);
-
   // Init
   // Don't ignore any frequencies
-  bool noIgnore[NUM_FREQUENCIES] = {false, false, false, false, false, false, false, false, false, false};
+  bool noIgnore[NUM_FREQUENCIES] = {false, false, false, false, false,
+                                    false, false, false, false, false};
   detector_init(noIgnore);
   bool testing = true; // Set testing to true
-
   // Run detector
-  printf("Expected: Hit detected = 1 (aka true) at frequency 4.\n Actual: Hit detected = %d at frequency %d\n", hitDetector(testing), detector_getFrequencyNumberOfLastHit());
-
+  printf("Expected: Hit detected = 1 (aka true) at frequency 4.\n Actual: Hit "
+         "detected = %d at frequency %d\n",
+         hitDetector(testing), detector_getFrequencyNumberOfLastHit());
   // Make it so a hit should not be detected
   testArray[4] = 1;
-  //hitDetector(testing);
-  printf("Expected: Hit detected = 0 (aka false).\n Actual: Hit detected = %d\n", hitDetector(testing));
+  // hitDetector(testing);
+  printf(
+      "Expected: Hit detected = 0 (aka false).\n Actual: Hit detected = %d\n",
+      hitDetector(testing));
 }
 
 // Returns 0 if passes, non-zero otherwise.
 // if printTestMessages is true, print out detailed status messages.
 // detector_status_t detector_testSort(sortTestFunctionPtr testSortFunction,
 // bool printTestMessages);
-
 detector_status_t detector_testAdcScaling() {
   // fill
 }

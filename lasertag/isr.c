@@ -5,6 +5,7 @@
 #include "interrupts.h"
 #include "trigger.h"
 #include <stdio.h>
+
 // isr provides the isr_function() where you will place functions that require
 // accurate timing. A buffer for storing values from the Analog to Digital
 // Converter (ADC) is implemented in isr.c Values are added to this buffer by
@@ -61,34 +62,31 @@ void isr_function() {
 // the detector.
 void isr_addDataToAdcBuffer(uint32_t adcData) {
   // Check if the buffer is full (i.e., if indexIn + 1 == indexOut)
-  // if (adcBuffer.indexIn + 1 == adcBuffer.indexOut) {
-  // printf("elements: %d\n", adcBuffer.elementCount);
   if (adcBuffer.elementCount >= ADC_BUFFER_SIZE) {
-    // printf("Buffer is full\n");
     // If full, we have to pop before we can push
     isr_removeDataFromAdcBuffer();
-
     // Now add an element
     adcBuffer.data[adcBuffer.indexIn] = adcData;
-
     // Adding a value means incrementing indexIn
     if (adcBuffer.indexIn <
         ADC_BUFFER_SIZE - 1) { // Most times this is straightforward
       adcBuffer.indexIn++;
-    } else { // But if indexIn is pointing to the last element in the buffer,
+    } // But if indexIn is pointing to the last element in the buffer,
              // we need to wrap back around to zero
+    else { 
       adcBuffer.indexIn = 0;
     }
-
     adcBuffer.elementCount++;
-  } else { // If not full, just add an element
+  } // If not full, just add an element
+  else { 
     adcBuffer.data[adcBuffer.indexIn] = adcData;
     // Adding a value means incrementing indexIn
     if (adcBuffer.indexIn <
         ADC_BUFFER_SIZE - 1) { // Most times this is straightforward
       adcBuffer.indexIn++;
-    } else { // But if indexIn is pointing to the last element in the buffer,
+    } // But if indexIn is pointing to the last element in the buffer,
              // we need to wrap back around to zero
+             else { 
       adcBuffer.indexIn = 0;
     }
     adcBuffer.elementCount++;
@@ -97,23 +95,13 @@ void isr_addDataToAdcBuffer(uint32_t adcData) {
 
 // This removes a value from the ADC buffer.
 uint32_t isr_removeDataFromAdcBuffer() {
-  //printf("elements: %d\n", adcBuffer.elementCount);
   // Check if the buffer is empty
-  //if (adcBuffer.indexIn + 1 != adcBuffer.indexOut) {
   if (adcBuffer.elementCount > 0) {
     // First get the value we will return
     uint32_t dataVal = adcBuffer.data[adcBuffer.indexOut];
 
-    // Removing a value means incrementing indexOut
-    // if (adcBuffer.indexOut <
-    //     ADC_BUFFER_SIZE - 1) { // Most times this is straightforward
-    //   adcBuffer.indexOut++;
-    // } else { // But if indexOut is pointing to the last element in the buffer,
-    //          // we need to wrap back around to zero
-    //   adcBuffer.indexOut = 0;
-    // }
-
     adcBuffer.indexOut++;
+    //set the indexout to zero its greater than the buffer size
     if (adcBuffer.indexOut >= ADC_BUFFER_SIZE) {
       adcBuffer.indexOut = 0;
     }
@@ -123,8 +111,8 @@ uint32_t isr_removeDataFromAdcBuffer() {
 
     // Finally, return the value
     return dataVal;
-  } else {
-    // Do nothing if queue is empty
+  }// Do nothing if queue is empty
+   else {
     return 0;
   }
 }

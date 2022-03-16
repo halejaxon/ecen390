@@ -91,7 +91,7 @@ void hitLedTimer_tick() {
   static uint32_t ledCtr;
 
   // Debugging
-  //hlDebugStatePrint();
+  // hlDebugStatePrint();
 
   // Perform state update first.
   switch (currentState) {
@@ -108,7 +108,8 @@ void hitLedTimer_tick() {
     }
     break;
   case waitForHit_st:
-    if (receivedHit) { // If we are hit, go to light state
+    // If we are hit, go to light state
+    if (receivedHit) {
       // Turn the led on
       hitLedTimer_turnLedOn();
 
@@ -148,7 +149,7 @@ void hitLedTimer_tick() {
     }
     break;
   default:
-    //printf(ERROR_MESSAGE_HL); // print an error message here.
+    // printf(ERROR_MESSAGE_HL); // print an error message here.
     break;
   }
 
@@ -162,7 +163,7 @@ void hitLedTimer_tick() {
     ledCtr++; // increment ledCtr
     break;
   default:
-    //printf(ERROR_MESSAGE_HL); // print an error message here.
+    // printf(ERROR_MESSAGE_HL); // print an error message here.
     break;
   }
 }

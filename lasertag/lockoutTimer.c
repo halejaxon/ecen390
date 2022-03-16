@@ -89,9 +89,6 @@ void lockoutTimer_tick() {
   // Declare static variables unique to tick fct
   static uint32_t lockoutCtr;
 
-  // Debugging
-  //loDebugStatePrint();
-
   // Perform state update first.
   switch (currentState) {
   case init_st:

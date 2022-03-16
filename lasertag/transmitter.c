@@ -1,9 +1,9 @@
 #include "transmitter.h"
 #include "buttons.h"
 #include "display.h"
+#include "filter.h"
 #include "mio.h"
 #include "switches.h"
-#include "filter.h"
 #include <math.h>
 #include <stdio.h>
 #include <utils.h>
@@ -55,7 +55,6 @@ volatile static uint16_t frequencies[FILTER_FREQUENCY_COUNT] = {
 // chosen
 // frequency as set by transmitter_setFrequencyNumber(). The step counts for
 // the frequencies are provided in filter.h
-
 // States for the controller state machine.
 enum transmitter_st_t {
   init_st, // Start here, transition out of this state on the first tick.
@@ -99,7 +98,7 @@ void txDebugStatePrint() {
 }
 // Function returns the pulse widths with respect to the given frequency.
 uint16_t getPulseWidth(uint16_t frequencyNumber) {
-  double width = TICK_RATE / (HALF * (double) frequencies[frequencyNumber]);
+  double width = TICK_RATE / (HALF * (double)frequencies[frequencyNumber]);
   return round(width);
 }
 
@@ -147,7 +146,7 @@ void transmitter_tick() {
   static uint16_t currFrequencyNumber;
 
   // Debugging
-  //txDebugStatePrint();
+  // txDebugStatePrint();
 
   // Perform state update first.
   switch (currentState) {
@@ -211,7 +210,8 @@ void transmitter_tick() {
     }
     // Once the pulse count gets big enough then we can assign values and reset
     // the counter.
-    else if (pulseCtr >= filter_frequencyTickTable[currFrequencyNumber] / HALF) {
+    else if (pulseCtr >=
+             filter_frequencyTickTable[currFrequencyNumber] / HALF) {
 
       // Run the tx
       pinInput = !pinInput;
@@ -233,10 +233,11 @@ void transmitter_tick() {
   case contTransmit_st:
     // Printing the output if the DEBUG is true.
     // If thecounter is above the TRAMSIT_TIME then return to Inital state.
-    if ((pulseCtr >= filter_frequencyTickTable[txFrequencyNumber] / HALF) && isContinuous) {
-       // Report (debugging)
-      //printf("Pulse width: %d\n", getPulseWidth(txFrequencyNumber));
-    
+    if ((pulseCtr >= filter_frequencyTickTable[txFrequencyNumber] / HALF) &&
+        isContinuous) {
+      // Report (debugging)
+      // printf("Pulse width: %d\n", getPulseWidth(txFrequencyNumber));
+
       // Run the tx
       pinInput = !pinInput;
       pulseCtr = 0;
@@ -244,8 +245,9 @@ void transmitter_tick() {
       // If pinout istrue then output should be 1.
       if (pinInput) {
         transmitter_set_jf1_to_one();
-        // If pinout is not true then output should be 0.
-      } else {
+
+      } // If pinout is not true then output should be 0.
+      else {
         transmitter_set_jf1_to_zero();
       }
 
@@ -253,7 +255,6 @@ void transmitter_tick() {
       currentState = contTransmit_st;
       // if is continuous is true go to contransmit_st
     } else if (isContinuous) {
-
       currentState = contTransmit_st;
     } // if is continuous is not true go to init_st
     else {
@@ -262,7 +263,7 @@ void transmitter_tick() {
     }
     break;
   default:
-    //printf(ERROR_MESSAGE_TX);
+    // printf(ERROR_MESSAGE_TX);
     break;
   }
 
@@ -364,7 +365,8 @@ void transmitter_runNoncontinuousTest() {
   // debouncer
   do {
     utils_msDelay(BOUNCE_DELAY);
-  } while (buttons_read());
+  } // stay here until buttons are realeased
+  while (buttons_read());
   printf(END_TEST_MESSAGE);
 }
 
