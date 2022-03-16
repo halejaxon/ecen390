@@ -149,7 +149,6 @@ void hitLedTimer_tick() {
     }
     break;
   default:
-    // printf(ERROR_MESSAGE_HL); // print an error message here.
     break;
   }
 
@@ -163,7 +162,6 @@ void hitLedTimer_tick() {
     ledCtr++; // increment ledCtr
     break;
   default:
-    // printf(ERROR_MESSAGE_HL); // print an error message here.
     break;
   }
 }

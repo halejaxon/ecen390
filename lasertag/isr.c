@@ -1,8 +1,8 @@
 #include "isr.h"
 #include "hitLedTimer.h"
+#include "interrupts.h"
 #include "lockoutTimer.h"
 #include "transmitter.h"
-#include "interrupts.h"
 #include "trigger.h"
 #include <stdio.h>
 
@@ -72,21 +72,21 @@ void isr_addDataToAdcBuffer(uint32_t adcData) {
         ADC_BUFFER_SIZE - 1) { // Most times this is straightforward
       adcBuffer.indexIn++;
     } // But if indexIn is pointing to the last element in the buffer,
-             // we need to wrap back around to zero
-    else { 
+      // we need to wrap back around to zero
+    else {
       adcBuffer.indexIn = 0;
     }
     adcBuffer.elementCount++;
   } // If not full, just add an element
-  else { 
+  else {
     adcBuffer.data[adcBuffer.indexIn] = adcData;
     // Adding a value means incrementing indexIn
     if (adcBuffer.indexIn <
         ADC_BUFFER_SIZE - 1) { // Most times this is straightforward
       adcBuffer.indexIn++;
     } // But if indexIn is pointing to the last element in the buffer,
-             // we need to wrap back around to zero
-             else { 
+      // we need to wrap back around to zero
+    else {
       adcBuffer.indexIn = 0;
     }
     adcBuffer.elementCount++;
@@ -101,7 +101,7 @@ uint32_t isr_removeDataFromAdcBuffer() {
     uint32_t dataVal = adcBuffer.data[adcBuffer.indexOut];
 
     adcBuffer.indexOut++;
-    //set the indexout to zero its greater than the buffer size
+    // set the indexout to zero its greater than the buffer size
     if (adcBuffer.indexOut >= ADC_BUFFER_SIZE) {
       adcBuffer.indexOut = 0;
     }
@@ -111,8 +111,8 @@ uint32_t isr_removeDataFromAdcBuffer() {
 
     // Finally, return the value
     return dataVal;
-  }// Do nothing if queue is empty
-   else {
+  } // Do nothing if queue is empty
+  else {
     return 0;
   }
 }

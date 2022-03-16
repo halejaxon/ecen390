@@ -18,22 +18,24 @@
 #define NUM_FUDGE_FACTORS 5
 #define MEDIAN 5
 #define NOT_TEST false
-// #define RUN_TEST_PRINT_EXPECTED_HIT "Expected: Hit detected = 1 (aka true) at
-// frequency 4.\n Actual: Hit "
-//          "detected = %d at frequency %d\n"
-// #define RUN_TEST_PRINT_ACTUAL "Expected: Hit detected = 0 (aka false).\n
-// Actual: Hit detected = %d\n"
+#define ADC_RANGE_MAX 4095
+#define TWICE 2
+#define ONE_DOUBLE 1.0
+#define TEST_MAX_LOCATION 4
+#define TEST_FUDGE_INDEX 3
+#define TEST_ARRAY_VALS                                                        \
+  0.12, 0.15, 0.14, 0.30, 700, 0.22, 0.21, 0.19, 0.14, 0.15
 
-static uint16_t fudgeFactors[NUM_FUDGE_FACTORS] = {100, 200, 500, 1000, 10000};
-static double testArray[NUM_FREQUENCIES] = {0.12, 0.15, 0.14, 0.30, 700,
-                                            0.22, 0.21, 0.19, 0.14, 0.15};
+static const uint16_t fudgeFactors[NUM_FUDGE_FACTORS] = {100, 200, 500, 1000,
+                                                         10000};
+static double testArray[NUM_FREQUENCIES] = {TEST_ARRAY_VALS};
 static double sortedArray[NUM_FREQUENCIES];
 static bool allIgnored;
 static bool frequenciesIgnored[NUM_FREQUENCIES];
 static detector_hitCount_t hitCount[NUM_FREQUENCIES];
 static uint16_t filterAddCount;
 static bool hitDetected;
-static uint16_t fudgeFactorIndex = 3;
+static uint16_t fudgeFactorIndex = TEST_FUDGE_INDEX;
 static uint16_t lastHitFrequency = 0;
 
 // Sorting function - takes in an array and a length and changes the original
@@ -225,6 +227,7 @@ void detector_ignoreAllHits(bool flagValue) { allIgnored = flagValue; }
 // Copy the current hit counts into the user-provided hitArray
 // using a for-loop.
 void detector_getHitCounts(detector_hitCount_t hitArray[]) {
+  // Copy counts into hitArray
   for (uint16_t i = 0; i < NUM_FREQUENCIES; i++) {
     hitArray[i] = hitCount[i];
   }
@@ -256,7 +259,7 @@ detector_status_t detector_sort(uint32_t *maxPowerFreqNo,
 
 // Encapsulate ADC scaling for easier testing.
 double detector_getScaledAdcValue(isr_AdcValue_t adcValue) {
-  return 2 * (double)adcValue / 4095 - 1.0;
+  return TWICE * (double)adcValue / ADC_RANGE_MAX - ONE_DOUBLE;
 }
 
 /*******************************************************
@@ -265,7 +268,7 @@ double detector_getScaledAdcValue(isr_AdcValue_t adcValue) {
 
 // Students implement this as part of Milestone 3, Task 3.
 void detector_runTest() {
-  uint16_t fakeFudgeFactorInd = 3;
+  uint16_t fakeFudgeFactorInd = TEST_FUDGE_INDEX;
   detector_setFudgeFactorIndex(fakeFudgeFactorInd);
   // Init
   // Don't ignore any frequencies
@@ -278,7 +281,7 @@ void detector_runTest() {
          "detected = %d at frequency %d\n",
          hitDetector(testing), detector_getFrequencyNumberOfLastHit());
   // Make it so a hit should not be detected
-  testArray[4] = 1;
+  testArray[TEST_MAX_LOCATION] = 1;
   // hitDetector(testing);
   printf(
       "Expected: Hit detected = 0 (aka false).\n Actual: Hit detected = %d\n",

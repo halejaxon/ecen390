@@ -48,7 +48,7 @@ volatile static uint16_t txFrequencyNumber;
 volatile static bool isRunning = false;
 volatile static bool isContinuous = false;
 volatile static bool pinInput = false;
-volatile static uint16_t frequencies[FILTER_FREQUENCY_COUNT] = {
+static const uint16_t frequencies[FILTER_FREQUENCY_COUNT] = {
     1471, 1724, 2000, 2273, 2632, 2941, 3333, 3571, 3846, 4167};
 
 // The transmitter state machine generates a square wave output at the
@@ -236,8 +236,6 @@ void transmitter_tick() {
     if ((pulseCtr >= filter_frequencyTickTable[txFrequencyNumber] / HALF) &&
         isContinuous) {
       // Report (debugging)
-      // printf("Pulse width: %d\n", getPulseWidth(txFrequencyNumber));
-
       // Run the tx
       pinInput = !pinInput;
       pulseCtr = 0;
@@ -379,7 +377,6 @@ void transmitter_runNoncontinuousTest() {
 // in response to changes to the changes in the slide switches.
 // Test runs until BTN1 is pressed.
 void transmitter_runContinuousTest() {
-  // Filler
   printf(START_CONT_TEST_MESSAGE);
   utils_msDelay(TRANSMITTER_TEST_TICK_PERIOD_IN_MS);
   mio_init(false);
