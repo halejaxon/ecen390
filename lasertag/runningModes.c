@@ -37,7 +37,7 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 // Uncomment this code so that the code in the various modes will
 // ignore your own frequency. You still must properly implement
 // the ability to ignore frequencies in detector.c
-//#define IGNORE_OWN_FREQUENCY 1
+#define IGNORE_OWN_FREQUENCY 1
 
 #define MAX_HIT_COUNT 100000
 

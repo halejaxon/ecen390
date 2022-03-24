@@ -2,7 +2,9 @@
 #include "buttons.h"
 #include "mio.h"
 #include "transmitter.h"
+#include "ammoHandler.h"
 #include <stdio.h>
+#include "sound.h"
 
 #define START_TRIGGER_TEST_MESSAGE "Starting Trigger Test\n"
 #define END_TEST_MESSAGE "exiting test\n"
@@ -14,6 +16,7 @@
 #define GUN_TRIGGER_PRESSED 1
 #define TRIGGER_PUSHED_MESSAGE "D\n"
 #define TRIGGER_RELEASED_MESSAGE "U\n"
+#define INIT_SHOTS 10
 
 // Uncomment for debug prints
 //#define DEBUG
@@ -41,6 +44,8 @@ static enum trigger_st_t currentState;
 static bool triggerEnable = false;
 static bool ignoreGunInput = false;
 
+static trigger_shotsRemaining_t shotsRemaining;
+
 // This function returns a true is the button is pressed
 bool triggerPressed() {
   // Read from JF-2 and from BTN0
@@ -60,6 +65,7 @@ void trigger_init() {
   if (triggerPressed()) {
     ignoreGunInput = true;
   }
+  shotsRemaining = INIT_SHOTS;
 }
 
 // Enable the trigger state machine. The trigger state-machine is inactive
@@ -71,10 +77,14 @@ void trigger_enable() { triggerEnable = true; }
 void trigger_disable() { triggerEnable = false; }
 
 // Returns the number of remaining shots.
-trigger_shotsRemaining_t trigger_getRemainingShotCount();
+trigger_shotsRemaining_t trigger_getRemainingShotCount() {
+  return shotsRemaining;
+}
 
 // Sets the number of remaining shots.
-void trigger_setRemainingShotCount(trigger_shotsRemaining_t count);
+void trigger_setRemainingShotCount(trigger_shotsRemaining_t count) {
+  shotsRemaining = count;
+}
 
 // Standard tick function.
 void trigger_tick() {
@@ -101,7 +111,15 @@ void trigger_tick() {
     // transmitter
     if ((debounceCtr > DEBOUNCE_COUNT) && (triggerPressed())) {
       debounceCtr = 0;
-      transmitter_run();
+
+      // Only shoot if we actually have ammo
+      if (trigger_getRemainingshotCount() > 0) {
+        transmitter_run();
+        shotsRemaining--; // We have used up one of our shots
+      }
+      
+      // Tell the ammoHandler that the trigger was pulled
+      ammoHandlerRun();
       currentState = transmitter_st;
     } // move onto the init state if the counter is big but it was a false alarm
     else if (debounceCtr > DEBOUNCE_COUNT && !(triggerPressed())) {
@@ -113,11 +131,11 @@ void trigger_tick() {
     }
     break;
   case transmitter_st:
-    // if the counter is big enough and the trigger still isn't pressed then
-    // stay her as a debounce.
+    // debounce the release of the trigger
     if ((debounceCtr > DEBOUNCE_COUNT) && (!triggerPressed())) {
       debounceCtr = 0;
       DPRINTF(TRIGGER_RELEASED_MESSAGE);
+      ammoHandler_stop(); // Tell the ammohandler when the trigger is released
       currentState = waitForHit_st;
     } /// stay in this transmitter state
     else {

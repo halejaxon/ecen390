@@ -56,8 +56,8 @@ int main() {
 #ifdef RUNNING_MODE_TESTS
   // queue_runTest();      // M1
   // filterTest_runTest(); // M3 T1
-  detector_runTest(); // M3 T3
-// sound_runTest(); // M4
+  //detector_runTest(); // M3 T3
+  sound_runTest(); // M4
 #endif
 
 #ifdef RUNNING_MODE_M3_T2
@@ -70,6 +70,7 @@ int main() {
   interrupts_startArmPrivateTimer();  // start the main timer.
   interrupts_enableArmInts(); // now the ARM processor can see interrupts.
 
+  /*
   // transmitter_runTest();
   transmitter_runNoncontinuousTest();
   transmitter_runContinuousTest();
@@ -79,6 +80,8 @@ int main() {
   while (1)
     ;
     // Forever-while loop. Modify as you see fit.
+  */
+
 #endif
 
 #ifdef RUNNING_MODE_M3_T3

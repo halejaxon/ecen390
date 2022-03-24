@@ -22,12 +22,12 @@
 #define TWICE 2
 #define ONE_DOUBLE 1.0
 #define TEST_MAX_LOCATION 4
-#define TEST_FUDGE_INDEX 3
+#define TEST_FUDGE_INDEX 1
 #define TEST_ARRAY_VALS                                                        \
   0.12, 0.15, 0.14, 0.30, 700, 0.22, 0.21, 0.19, 0.14, 0.15
 
-static const uint16_t fudgeFactors[NUM_FUDGE_FACTORS] = {100, 200, 500, 1000,
-                                                         10000};
+static const uint16_t fudgeFactors[NUM_FUDGE_FACTORS] = {25, 60, 125, 250,
+                                                         500};
 static double testArray[NUM_FREQUENCIES] = {TEST_ARRAY_VALS};
 static double sortedArray[NUM_FREQUENCIES];
 static bool allIgnored;

@@ -4,6 +4,8 @@
 #include "lockoutTimer.h"
 #include "transmitter.h"
 #include "trigger.h"
+#include "livesCounter.h"
+#include "ammoHandler.h"
 #include <stdio.h>
 
 // isr provides the isr_function() where you will place functions that require
@@ -44,6 +46,9 @@ void isr_init() {
   lockoutTimer_init();
   hitLedTimer_init();
   trigger_init();
+  sound_init();
+  lives_init();
+  ammoHandler_init();
 }
 
 // This function is invoked by the timer interrupt at 100 kHz.
@@ -56,6 +61,9 @@ void isr_function() {
   lockoutTimer_tick();
   hitLedTimer_tick();
   trigger_tick();
+  sound_tick();
+  lives_tick();
+  ammoHandler_tick();
 }
 
 // This adds data to the ADC queue. Data are removed from this queue and used by

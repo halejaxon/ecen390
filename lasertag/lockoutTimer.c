@@ -123,7 +123,7 @@ void lockoutTimer_tick() {
     }
     break;
   default:
-    //printf(ERROR_MESSAGE_LO);
+    // printf(ERROR_MESSAGE_LO);
     break;
   }
 
