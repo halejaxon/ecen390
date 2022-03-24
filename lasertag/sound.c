@@ -168,6 +168,7 @@ void sound_tick() {
     }
     break;
   case sound_wait_st:
+  //When the sound is true then we reset the TX and then enable it/
     if (sound_playSoundFlag) {
       arrayIndex = 0;
       currentState = sound_play_st;
@@ -191,6 +192,7 @@ void sound_tick() {
       sound_sendDataToBothChannels(
           sampleValue); // Send the sound data to the left and right channels.
       arrayIndex++;     // Go to next sample.
+      //if the Index is equal to the sample count then go back to the wait state
       if (arrayIndex == sound_sampleCount) { // All done?
         sound_playSoundFlag = false;         // Yes.
         sound_disableTxFifo();               // Disable the TX FIFO.
@@ -216,6 +218,7 @@ void sound_stopSound() {
 // Use this to set the base address for the array containing sound data.
 // Allow sounds to be interrupted.
 void sound_setSound(sound_sounds_t sound) {
+  //If the sound is on then stop if
   if (sound_isBusy()) { // You are currently playing some sound.
     sound_stopSound(); // Stop the sound and reset the state-machine, FIFO, etc.
   }
@@ -289,40 +292,50 @@ void sound_runTest() {
   sound_setSound(sound_gunClick_e);
   printf("playing gunClick_e\n");
   sound_startSound();
+  //Loop until sound isnt busy
   while (1) {
     sound_tick();
+    //if the sound is off then break
     if (!sound_isBusy())
       break;
   }
   sound_setSound(sound_gunFire_e);
   printf("playing gunFire_e\n");
   sound_startSound();
+  //Loop until sound isn't busy
   while (1) {
     sound_tick();
+    //When the sound isn't busy then we can break
     if (!sound_isBusy())
       break;
   }
   sound_setSound(sound_gunReload_e);
   printf("playing gunReload_e\n");
   sound_startSound();
+  //loop until sound isn't busy
   while (1) {
     sound_tick();
+    //When the sound isn't busy then we can break
     if (!sound_isBusy())
       break;
   }
   sound_setSound(sound_loseLife_e);
   printf("playing loseLife_e\n");
   sound_startSound();
+  //loop until sound isn't busy
   while (1) {
     sound_tick();
+    //When the sound isn't busy then we can break
     if (!sound_isBusy())
       break;
   }
   sound_setSound(sound_gameOver_e);
   printf("playing gameOver_e\n");
   sound_startSound();
+  //loop until sound isn't busy
   while (1) {
     sound_tick();
+    //When the sound isn't busy then we can break
     if (!sound_isBusy())
       break;
   }
@@ -358,7 +371,6 @@ static XIicPs Iic; /* Instance of the IIC Device */
 **    Writes a value to a register in the SSM2603 device over IIC.
 **
 */
-
 #define SEND_BUFFER_SIZE 2
 int AudioRegSet(XIicPs *IIcPtr, u8 regAddr, u16 regData) {
   int Status;
@@ -426,6 +438,7 @@ int AudioInitialize(u16 timerID, u16 iicID, u32 i2sAddr) {
    * then initialize it.
    */
   Config = XIicPs_LookupConfig(iicID);
+  //If the NULL is equal to the configuration the reture a failure
   if (NULL == Config) {
     return XST_FAILURE;
   }
@@ -439,6 +452,7 @@ int AudioInitialize(u16 timerID, u16 iicID, u32 i2sAddr) {
    * Perform a self-test to ensure that the hardware was built correctly.
    */
   Status = XIicPs_SelfTest(&Iic);
+  //If the status is not equal to the success variable then return a failure 
   if (Status != XST_SUCCESS) {
     return XST_FAILURE;
   }
@@ -447,6 +461,7 @@ int AudioInitialize(u16 timerID, u16 iicID, u32 i2sAddr) {
    * Set the IIC serial clock rate.
    */
   Status = XIicPs_SetSClk(&Iic, IIC_SCLK_RATE);
+  //If the status is not equal to the success variable then return a failure 
   if (Status != XST_SUCCESS) {
     return XST_FAILURE;
   }
@@ -459,51 +474,61 @@ int AudioInitialize(u16 timerID, u16 iicID, u32 i2sAddr) {
 
   // Perform Reset
   Status = AudioRegSet(&Iic, 15, 0b000000000);
+  //if status is true then we will delay and then set it equal to the audio register
   if (Status)
     printf("Status1:%d\n", Status);
   TimerDelay(75000);
   // Power up
   Status |= AudioRegSet(&Iic, 6, 0b000110000);
+  //if status is true then we will delay and then set it equal to the audio register
   if (Status)
     printf("Status2:%d\n", Status);
   // Left-channel ADC input volume.
   Status |= AudioRegSet(&Iic, 0, 0b000010111);
+  //if status is true then we will delay and then set it equal to the audio register
   if (Status)
     printf("Status3:%d\n", Status);
   // Right-channel ADC input volume.
   AudioRegSet(&Iic, 1, 0b000010111);
   // Left-channel DAC volume. Also set
   Status |= AudioRegSet(&Iic, 2, 0b101111001);
+  //if status is true then we will delay and then set it equal to the audio register
   if (Status)
     printf("Status4:%d\n", Status);
   // right volume to same value.
   Status |= AudioRegSet(&Iic, 4, 0b000010000); // Analog audio path.
+  //if status is true then we will delay and then set it equal to the audio register
   if (Status)
     printf("Status5:%d\n", Status);
   Status |= AudioRegSet(&Iic, 5, 0b000000000); // Digital audio path.
+  //if status is true then we will delay and then set it equal to the audio register
   if (Status)
     printf("Status6:%d\n", Status);
   // Changed so Word length is 24  Status |= AudioRegSet(&Iic,
   // 8, 0b000000000); //Changed so no CLKDIV2
   Status |= AudioRegSet(&Iic, 7, 0b000001010);
+  //if status is true then we will delay and then set it equal to the audio register
   if (Status)
     printf("Status7:%d\n", Status);
   // Changed so no CLKDIV2
   Status |= AudioRegSet(&Iic, 8, 0b000000000);
+  //if status is true then we will delay and then set it equal to the audio register
   if (Status)
     printf("Status8:%d\n", Status);
   // Wait for things to settle down.
   TimerDelay(75000);
   // Make things active.
   Status |= AudioRegSet(&Iic, 9, 0b000000001);
+  //if status is true then we will delay and then set it equal to the audio register
   if (Status)
     printf("Status9:%d\n", Status);
   // Power-up the ouput (OSC is left
   // disabled as MCLK pin provides clock).
   Status |= AudioRegSet(&Iic, 6, 0b000100000);
+  //if status is true then we will delay and then set it equal to the audio register
   if (Status)
     printf("Status10:%d\n", Status);
-
+  //if status is true then we will delay and then set it equal to the audio register
   if (Status != XST_SUCCESS) {
     return XST_FAILURE;
   }
@@ -541,6 +566,7 @@ int AudioInitialize(u16 timerID, u16 iicID, u32 i2sAddr) {
 **
 */
 void I2SFifoWrite(u32 i2sBaseAddr, u32 audioData) {
+  //While we have these number then we will do the following
   while ((Xil_In32(i2sBaseAddr + I2S_FIFO_STS_REG)) & 0b0010) {
   }
   Xil_Out32(i2sBaseAddr + I2S_TX_FIFO_REG, audioData);
@@ -563,6 +589,7 @@ void I2SFifoWrite(u32 i2sBaseAddr, u32 audioData) {
 **
 */
 u32 I2SFifoRead(u32 i2sBaseAddr) {
+  //while we have these numbers we will return the following
   while ((Xil_In32(i2sBaseAddr + I2S_FIFO_STS_REG)) & 0b0100) {
   }
   return Xil_In32(i2sBaseAddr + I2S_RX_FIFO_REG);

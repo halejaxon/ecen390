@@ -19,7 +19,6 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 #define LIVES 3
 #define HITS_PER_LIFE 5
 
-
 #include <stdint.h>
 
 // Prints out various run-time statistics on the TFT display.

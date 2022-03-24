@@ -318,9 +318,8 @@ static bool queue_pushPopTest() {
   // Test queue_empty().
   tempResult = queue_empty(&testQ);
   if (!tempResult) {
-    printf(
-        "* Error: queue_empty(%s) should return true but returned false.\n",
-        queue_name(&testQ));
+    printf("* Error: queue_empty(%s) should return true but returned false.\n",
+           queue_name(&testQ));
   }
   testResult = tempResult ? testResult
                           : false; // Logical AND of testResult and tempResult.
@@ -564,11 +563,9 @@ bool queue_runTest() {
            "=== \n");
     bool tempResult = queue_emptyTest(&testQ, dataArray, arraySize);
     if (tempResult) {
-      printf("=== Queue: %s passed a basic empty test.\n",
-             queue_name(&testQ));
+      printf("=== Queue: %s passed a basic empty test.\n", queue_name(&testQ));
     } else {
-      printf("=== Queue: %s failed a basic empty test.\n",
-             queue_name(&testQ));
+      printf("=== Queue: %s failed a basic empty test.\n", queue_name(&testQ));
     }
     testResult = tempResult
                      ? testResult
@@ -608,11 +605,9 @@ bool queue_runTest() {
            "empty) === \n");
     tempResult = queue_overwritePushTest();
     if (tempResult) {
-      printf("=== Queue: %s passed overwritePush test.\n",
-             queue_name(&testQ));
+      printf("=== Queue: %s passed overwritePush test.\n", queue_name(&testQ));
     } else {
-      printf("=== Queue: %s failed overwritePush test.\n",
-             queue_name(&testQ));
+      printf("=== Queue: %s failed overwritePush test.\n", queue_name(&testQ));
     }
     testResult = tempResult
                      ? testResult

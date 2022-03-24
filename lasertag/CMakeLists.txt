@@ -1,19 +1,19 @@
 add_executable(lasertag.elf
 main.c
 queue_test.c
-# filter.c
-# filterTest.c
-# histogram.c
-# isr.c
-# trigger.c
-# transmitter.c
-# hitLedTimer.c
-# lockoutTimer.c
-# detector.c
-# sound.c
-# timer_ps.c
-# runningModes.c
-# runningModes2.c
+filter.c
+filterTest.c
+histogram.c
+isr.c
+trigger.c
+transmitter.c
+hitLedTimer.c
+lockoutTimer.c
+detector.c
+sound.c
+timer_ps.c
+runningModes.c
+runningModes2.c
 )
 
 add_subdirectory(sounds)

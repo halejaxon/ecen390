@@ -8,10 +8,9 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 */
 
 #include "runningModes.h"
+#include "buttons.h"
 #include "detector.h"
 #include "display.h"
-#include "buttons.h"
-#include "switches.h"
 #include "filter.h"
 #include "histogram.h"
 #include "hitLedTimer.h"
@@ -24,6 +23,7 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 #include "mio.h"
 #include "queue.h"
 #include "sound.h"
+#include "switches.h"
 #include "transmitter.h"
 #include "trigger.h"
 #include "utils.h"
@@ -37,7 +37,7 @@ For questions, contact Brad Hutchings or Jeff Goeders, https://ece.byu.edu/
 // Uncomment this code so that the code in the various modes will
 // ignore your own frequency. You still must properly implement
 // the ability to ignore frequencies in detector.c
-//#define IGNORE_OWN_FREQUENCY 1
+#define IGNORE_OWN_FREQUENCY 1
 
 #define MAX_HIT_COUNT 100000
 
@@ -268,12 +268,17 @@ void runningModes_shooter() {
   runningModes_initAll();
   // Init the ignored-frequencies so no frequencies are ignored.
   bool ignoredFrequencies[FILTER_FREQUENCY_COUNT];
-  for (uint16_t i = 0; i < FILTER_FREQUENCY_COUNT; i++)
+
+  for (uint16_t i = 0; i < FILTER_FREQUENCY_COUNT; i++) {
+
     ignoredFrequencies[i] = false;
+  }
+
 #ifdef IGNORE_OWN_FREQUENCY
   printf("Ignoring own frequency.\n");
   ignoredFrequencies[runningModes_getFrequencySetting()] = true;
 #endif
+
   detector_init(ignoredFrequencies);
   uint16_t hitCount = 0;
   detectorInvocationCount = 0; // Keep track of detector invocations.
@@ -296,9 +301,11 @@ void runningModes_shooter() {
   interrupts_enableArmInts(); // The ARM will start seeing interrupts after
                               // this.
   lockoutTimer_start(); // Ignore erroneous hits at startup (when all power
-                        // values are essentially 0).
+  // values are essentially 0).
+
   while ((!(buttons_read() & BUTTONS_BTN3_MASK)) &&
          hitCount < MAX_HIT_COUNT) { // Run until you detect btn3 pressed.
+
     transmitter_setFrequencyNumber(
         runningModes_getFrequencySetting());    // Read the switches and switch
                                                 // frequency as required.
@@ -320,6 +327,7 @@ void runningModes_shooter() {
     intervalTimer_stop(
         MAIN_CUMULATIVE_TIMER); // All done with actual processing.
   }
+
   interrupts_disableArmInts(); // Done with loop, disable the interrupts.
   hitLedTimer_turnLedOff();    // Save power :-)
   runningModes_printRunTimeStatistics(); // Print the run-time statistics to the
